@@ -74,6 +74,9 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 .rank th:first-child,.rank td:first-child,.rank th:nth-child(2),.rank td:nth-child(2){text-align:left}
 .rank th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase}
 .rank tr{cursor:pointer}.rank tr:hover td{background:var(--soft)}
+#rankWrap.scroll{max-height:440px;overflow-y:auto;border:1px solid var(--line);border-radius:12px}
+#rankWrap.scroll .rank th{position:sticky;top:0;background:#fbe7f2;z-index:1}
+#rankWrap.scroll .rank th,#rankWrap.scroll .rank td{padding-left:12px;padding-right:12px}
 .pill{display:inline-block;background:#fbe7f2;color:var(--wine);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;margin:2px 4px 2px 0}
 .foot{padding:26px 0;color:var(--muted);font-size:12.5px}
 .foot b{color:var(--ink)}
@@ -242,8 +245,9 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
     <div class="tab on" id="rtab-mun" onclick="setRank('mun')">Municípios</div>
     <div class="tab" id="rtab-uf" onclick="setRank('uf')">Estados</div>
   </div>
-  <p class="lead">Clique em uma linha para carregá-la no dimensionamento acima.</p>
-  <table class="rank"><thead id="rankHead"></thead><tbody id="rankBody"></tbody></table>
+  <p class="lead">Clique em uma linha para carregá-la no dimensionamento acima. Para um município específico, use a busca da seção 03.</p>
+  <div id="rankWrap"><table class="rank"><thead id="rankHead"></thead><tbody id="rankBody"></tbody></table></div>
+  <div class="btnrow"><button class="btn sec" id="btnRankMore" onclick="toggleRank()">Ver ranking completo ▾</button><span class="note" id="rankCount"></span></div>
 </div></section>
 
 <section><div class="wrap">
@@ -277,7 +281,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-07-14 20:43 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-07-14 21:41 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>/*!
@@ -828,23 +832,39 @@ function calc(){
 
 /* ---------- rankings ---------- */
 let rankMode='mun';
+let rankExpanded=false;
+const RANK_TOP=10, RANK_MAX_MUN=200;
 function setRank(m){
   rankMode=m;
   document.getElementById('rtab-mun').classList.toggle('on',m==='mun');
   document.getElementById('rtab-uf').classList.toggle('on',m==='uf');
   renderRank();
 }
+function toggleRank(){
+  rankExpanded=!rankExpanded;
+  document.getElementById('rankWrap').classList.toggle('scroll',rankExpanded);
+  document.getElementById('btnRankMore').textContent = rankExpanded?'Ver menos ▴':'Ver ranking completo ▾';
+  renderRank();
+}
 function renderRank(){
   const head=document.getElementById('rankHead'), body=document.getElementById('rankBody');
   if(rankMode==='mun'){
+    const total=MUNICIPIOS.length, n=rankExpanded?RANK_MAX_MUN:RANK_TOP;
     head.innerHTML='<tr><th>#</th><th>Município</th><th>UF</th><th>Mulheres 25–64</th><th>População</th><th>% alvo</th></tr>';
-    body.innerHTML=MUNICIPIOS.slice(0,60).map((m,i)=>
+    body.innerHTML=MUNICIPIOS.slice(0,n).map((m,i)=>
       `<tr onclick="pick('${m[0].replace(/'/g,"\\'")}','${m[1]}');document.querySelector('.panel').scrollIntoView({behavior:'smooth'})"><td>${i+1}</td><td>${m[0]}</td><td>${m[1]}</td><td>${m[3].toLocaleString('pt-BR')}</td><td>${m[2].toLocaleString('pt-BR')}</td><td>${(100*m[3]/m[2]).toFixed(1)}%</td></tr>`).join('');
+    document.getElementById('rankCount').textContent = rankExpanded
+      ? 'Mostrando os '+Math.min(n,total)+' maiores de '+total.toLocaleString('pt-BR')+' municípios — use a busca acima para os demais.'
+      : 'Mostrando o Top 10 de '+total.toLocaleString('pt-BR')+' municípios.';
   } else {
     const ufs=Object.entries(UF_STATS).sort((a,b)=>b[1].m-a[1].m);
+    const n=rankExpanded?ufs.length:RANK_TOP;
     head.innerHTML='<tr><th>#</th><th>Estado</th><th>UF</th><th>Mulheres 25–64</th><th>População</th><th>Municípios</th></tr>';
-    body.innerHTML=ufs.map(([uf,s],i)=>
+    body.innerHTML=ufs.slice(0,n).map(([uf,s],i)=>
       `<tr onclick="pickUF('${uf}');document.querySelector('.panel').scrollIntoView({behavior:'smooth'})"><td>${i+1}</td><td>${s.nome}</td><td>${uf}</td><td>${s.m.toLocaleString('pt-BR')}</td><td>${s.pop.toLocaleString('pt-BR')}</td><td>${s.n}</td></tr>`).join('');
+    document.getElementById('rankCount').textContent = rankExpanded
+      ? 'Mostrando todos os 27 estados.' : 'Mostrando o Top 10 de 27 estados.';
+    document.getElementById('btnRankMore').style.display = 'inline-block';
   }
 }
 function initUF(){
