@@ -66,6 +66,17 @@ UFSTATS_JS= json.dumps(uf_stats, ensure_ascii=False, separators=(',',':'))
 PATE_JS   = json.dumps(PATE, ensure_ascii=False, separators=(',',':'))
 PATEUF_JS = json.dumps({v['uf']:k for k,v in PATE.items() if v.get('tipo')=='ESTADUAL'}, ensure_ascii=False, separators=(',',':'))
 
+# Cobertura real de rastreio por município (SISCAN, triênio). COB[ibge6]=[pct,fonte,comp,fallback]
+COB = {(str(d.get('ibge') or ''))[:6]: [round((d.get('cobSiscan') or 0)*100), d.get('cobFonte') or '',
+        d.get('cobComp') or '', d.get('cobFallback') or ''] for d in DADOS if d.get('cobSiscan') is not None}
+_ufn={}; _ufd={}
+for d in DADOS:
+    c=d.get('cobSiscan'); m=d.get('m2564') or 0
+    if c is not None and m>0: _ufn[d['uf']]=_ufn.get(d['uf'],0)+c*m; _ufd[d['uf']]=_ufd.get(d['uf'],0)+m
+COB_UF = {uf: round(_ufn[uf]/_ufd[uf]*100) for uf in _ufn if _ufd[uf]>0}
+COB_JS = json.dumps(COB, ensure_ascii=False, separators=(',',':'))
+COBUF_JS = json.dumps(COB_UF, ensure_ascii=False, separators=(',',':'))
+
 def vend(name):
     return open(BASE/"vendor"/name, encoding="utf-8").read().replace('</script','<\\/script')
 CHART = vend("chart.umd.js"); JSPDF = vend("jspdf.umd.min.js"); AUTOTABLE = vend("jspdf.autotable.min.js")
@@ -254,10 +265,10 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
     </div>
 
     <div id="muniBox" style="display:none">
-      <div class="muni-hero"><div class="mn" id="mn"></div><div class="mt" id="mt"></div></div>
+      <div class="muni-hero"><div class="mn" id="mn"></div><div class="mt" id="mt"></div><div class="mt" id="mcov" style="margin-top:6px;font-size:12px;line-height:1.4"></div></div>
       <div class="grid2">
         <div>
-          <div class="ctl"><label>Cobertura atual de rastreio (ajuste manual)</label><input type="range" id="in-cov-atual" min="1" max="100" value="40" oninput="calc()"><span class="rangeval" id="v-cov-atual">40%</span></div>
+          <div class="ctl"><label>Cobertura atual de rastreio (SISCAN — ajustável)</label><input type="range" id="in-cov-atual" min="1" max="100" value="40" oninput="calc()"><span class="rangeval" id="v-cov-atual">40%</span></div>
           <div class="ctl"><label>Cobertura-meta (OMS: 70%)</label><input type="range" id="in-cov-meta" min="1" max="100" value="70" oninput="calc()"><span class="rangeval" id="v-cov-meta">70%</span></div>
           <div class="ctl"><label>Adesão ao convite</label><input type="range" id="in-adesao" min="1" max="100" value="80" oninput="calc()"><span class="rangeval" id="v-adesao">80%</span></div>
           <div class="ctl"><label>Prevalência de HPV de alto risco</label><input type="range" id="in-prev" min="1" max="30" value="10" oninput="calc()"><span class="rangeval" id="v-prev">10%</span></div>
@@ -404,6 +415,8 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 const MUNICIPIOS = __DATA__;    // [nome, uf, pop, m2564, ibge6]
 const UF_STATS   = __UFSTATS__; // {uf:{pop,m,n,capital,nome}}
 const PATE       = __PATE__;    // {codIbge6:{...saldo-gestor PATE...}}
+const COB        = __COB__;     // {ibge6:[pct, fonte, competencia, fallback]} — cobertura real SISCAN
+const COB_UF     = __COBUF__;   // {uf:pct} — cobertura ponderada por pop da UF
 const PATE_UF    = __PATEUF__;  // {uf:codIbge6 estadual}
 const PATE_COMP  = "__PATECOMP__";
 const MAIL_ENDPOINT = "__MAIL_ENDPOINT__";
@@ -462,6 +475,15 @@ function show(){
   document.getElementById('mn').textContent = isUF ? selected[0] : selected[0]+' / '+selected[1];
   const extra = isUF ? ' · '+UF_STATS[selected[1]].n+' municípios' : '';
   document.getElementById('mt').textContent = selected[3].toLocaleString('pt-BR')+' mulheres de 25 a 64 anos · '+selected[2].toLocaleString('pt-BR')+' habitantes (Censo 2022)'+extra;
+  // cobertura real: preenche o slider "Cobertura atual" com o dado por município (SISCAN, triênio)
+  const cb = isUF ? (COB_UF[selected[1]]!=null?[COB_UF[selected[1]],'SISCAN (média da UF)','2022-2024','uf']:null) : COB[selected[5]];
+  const covEl = document.getElementById('in-cov-atual');
+  if(cb){ covEl.value = cb[0]; }
+  document.getElementById('v-cov-atual').textContent = covEl.value+'%';
+  const fbTxt = cb && cb[3] ? ' · <i>estimada por média '+(cb[3]==='uf'?'da UF':'nacional')+' (SISCAN local indisponível/implausível)</i>' : '';
+  document.getElementById('mcov').innerHTML = cb
+    ? 'Cobertura atual preenchida com dado real: <b>'+cb[0]+'%</b> — '+(cb[1]||'SISCAN')+', triênio '+(cb[2]||'2022-2024')+' (mulheres únicas rastreadas 25–64 ÷ população 25–64)'+fbTxt+'. &nbsp;·&nbsp; <b>Previne/APS</b> (coleta de citopatológico na APS): indicador por município exige acesso restrito ao SISAB — não disponível publicamente.'
+    : 'Cobertura atual: ajuste manual (sem dado SISCAN para este recorte).';
   calc();
 }
 
@@ -1196,6 +1218,7 @@ document.getElementById('mailNote').textContent = MAIL_ENDPOINT
 out = (HTML.replace("__TOTM__", TOTM_BR).replace("__BUILD__", BUILD)
        .replace("__DATA__", DATA_JS).replace("__UFSTATS__", UFSTATS_JS)
        .replace("__PATE__", PATE_JS).replace("__PATEUF__", PATEUF_JS).replace("__PATECOMP__", PATE_COMP)
+       .replace("__COB__", COB_JS).replace("__COBUF__", COBUF_JS)
        .replace("__MAIL_ENDPOINT__", MAIL_ENDPOINT).replace("__MAIL_TOKEN__", MAIL_TOKEN)
        .replace("__CHART__", CHART).replace("__JSPDF__", JSPDF).replace("__AUTOTABLE__", AUTOTABLE))
 
