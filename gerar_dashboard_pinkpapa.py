@@ -11,6 +11,9 @@ import json, datetime, pathlib
 
 BASE = pathlib.Path(__file__).resolve().parent
 DADOS = json.load(open(BASE/"dados/municipios_pinkpapa.json", encoding="utf-8"))
+_pate_path = BASE/"dados/pate_saldo_202607.json"
+PATE = json.load(open(_pate_path, encoding="utf-8")) if _pate_path.exists() else {}
+PATE_COMP = "07/2026 · competência 2025-01 a 2026-07 (NT 33/2026 · PATE)"
 BUILD = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 # endpoint do Apps Script (envio real de e-mail com anexo). Vazio = fallback mailto.
@@ -33,13 +36,13 @@ UF_NOMES = {
  'RJ':'Rio de Janeiro','RN':'Rio Grande do Norte','RS':'Rio Grande do Sul','RO':'Rondônia','RR':'Roraima',
  'SC':'Santa Catarina','SP':'São Paulo','SE':'Sergipe','TO':'Tocantins'}
 
-muns = [[d['nome'], d['uf'], d['pop'] or 0, d['m2564'] or 0] for d in DADOS if d['m2564']]
+muns = [[d['nome'], d['uf'], d['pop'] or 0, d['m2564'] or 0, (str(d.get('ibge') or ''))[:6]] for d in DADOS if d['m2564']]
 muns.sort(key=lambda x:-x[3])
 uf_stats = {}
-for nome,uf,pop,m in muns:
+for nome,uf,pop,m,ib in muns:
     s = uf_stats.setdefault(uf, {'pop':0,'m':0,'capital':None,'n':0})
     s['pop']+=pop; s['m']+=m; s['n']+=1
-for nome,uf,pop,m in muns:
+for nome,uf,pop,m,ib in muns:
     if CAPITAIS.get(uf)==nome:
         uf_stats[uf]['capital']=[nome,uf,pop,m]
 # "Estado de/do/da X" — artigo correto por UF (DF não é Estado)
@@ -60,6 +63,8 @@ TOT_M = sum(x[3] for x in muns); TOT_POP = sum(x[2] for x in muns)
 
 DATA_JS   = json.dumps(muns, ensure_ascii=False, separators=(',',':'))
 UFSTATS_JS= json.dumps(uf_stats, ensure_ascii=False, separators=(',',':'))
+PATE_JS   = json.dumps(PATE, ensure_ascii=False, separators=(',',':'))
+PATEUF_JS = json.dumps({v['uf']:k for k,v in PATE.items() if v.get('tipo')=='ESTADUAL'}, ensure_ascii=False, separators=(',',':'))
 
 def vend(name):
     return open(BASE/"vendor"/name, encoding="utf-8").read().replace('</script','<\\/script')
@@ -274,6 +279,8 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
       </div>
       <div class="callout"><b>Premissa importante:</b> "casos suspeitos/lesões" não são câncer confirmado. O funil aplica etapas de confirmação e progressão ajustáveis (história natural do HPV) antes de estimar casos e mortes evitados — para não superestimar o retorno. Ajuste os controles à realidade epidemiológica local.</div>
 
+      <div id="pate-box" style="margin-top:14px"></div>
+
       <div class="selrow" style="margin-top:16px">
         <div class="fld"><label>Destinatário / autoridade (entra na proposta)</label><input type="text" id="in-dest-nome" placeholder="Ex.: Sr. Nicolau — Secretário de Saúde"></div>
         <div class="fld" style="max-width:280px"><label>E-mail do destinatário</label><input type="text" id="in-dest-email" placeholder="nome@municipio.gov.br"></div>
@@ -394,8 +401,11 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 <script>__JSPDF__</script>
 <script>__AUTOTABLE__</script>
 <script>
-const MUNICIPIOS = __DATA__;    // [nome, uf, pop, m2564]
+const MUNICIPIOS = __DATA__;    // [nome, uf, pop, m2564, ibge6]
 const UF_STATS   = __UFSTATS__; // {uf:{pop,m,n,capital,nome}}
+const PATE       = __PATE__;    // {codIbge6:{...saldo-gestor PATE...}}
+const PATE_UF    = __PATEUF__;  // {uf:codIbge6 estadual}
+const PATE_COMP  = "__PATECOMP__";
 const MAIL_ENDPOINT = "__MAIL_ENDPOINT__";
 const MAIL_TOKEN = "__MAIL_TOKEN__";
 const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
@@ -426,7 +436,7 @@ function onBusca(){
 function pick(nome,uf){
   escopo='mun'; setEscopoTabs('mun');
   selected = MUNICIPIOS.find(m=>m[0]===nome && m[1]===uf);
-  selected = [selected[0],selected[1],selected[2],selected[3],false];
+  selected = [selected[0],selected[1],selected[2],selected[3],false,selected[4]];
   document.getElementById('busca').value = nome+' / '+uf;
   document.getElementById('sug').innerHTML='';
   show();
@@ -435,7 +445,7 @@ function pickUF(uf){
   if(!uf) return;
   escopo='uf'; setEscopoTabs('uf');
   const s = UF_STATS[uf];
-  selected = [s.label, uf, s.pop, s.m, true];
+  selected = [s.label, uf, s.pop, s.m, true, (PATE_UF[uf]||'')];
   document.getElementById('seluf').value = uf;
   show();
 }
@@ -518,6 +528,7 @@ function calc(){
   document.getElementById('funnel-head').innerHTML =
     'Neste cenário, o programa <b>convoca '+fmt(adicionais)+'</b> mulheres ainda sem rastreio e <b>atende (testa) '+fmt(testes)+'</b> — em '+prazo+' '+(prazo==1?'mês':'meses')+' ('+fmt(Math.round(testesMes))+' testes/mês). '+
     'Dessas, ~<b>'+fmt(hpvPos)+'</b> dão HPV+ de alto risco e ~<b>'+fmt(lesoes)+'</b> têm lesão de alto grau a tratar.';
+  renderPate();
   document.getElementById('roi-custo').textContent=fmtMoney(custoPrograma);
   document.getElementById('roi-cpm').textContent = mortesEvit>0?fmtMoney(custoPorMorte):'—';
   document.getElementById('roi-soc').textContent = (roiSoc>=0?'+':'')+fmtPct(roiSoc);
@@ -923,6 +934,42 @@ function montarPDF(){
 }
 
 function nomeArq(){ return 'Proposta_PinkPapa_'+(selected?selected[0].replace(/[^\w]/g,'_'):'')+'.pdf'; }
+function renderPate(){
+  const box=document.getElementById('pate-box'); if(!box||!selected) return;
+  const isUF=selected[4];
+  const key = isUF ? (PATE_UF[selected[1]]||'') : (selected[5]||'');
+  const d = key ? PATE[key] : null;
+  const ente = isUF ? 'o estado' : 'o município';
+  if(!d){
+    box.innerHTML='<div class="callout"><b>🏛️ Agora Tem Especialistas (PATE) — SUS 360:</b> '+selected[0]+' não aparece como gestor com recurso próprio de especializada nesta competência ('+PATE_COMP+'). A atenção especializada pode ser executada pela gestão estadual — nesse caso, o seguimento das HPV+ é pactuado na CIR/PPI.</div>';
+    return;
+  }
+  const brl=v=>fmtMoney(v||0);
+  const rep=d.repasses||0, prod=d.producao||0, saldo=d.saldo||0, pct=d.pctExecutado||0;
+  const repAmb=d.repAmbulatorial||0, prodAmb=d.prodAmbulatorial||0, mm=d.mutiraoMulheres||0;
+  let tag,cor;
+  if(saldo>0 && pct<50){ tag='Alto potencial — recurso antecipado com execução baixa ('+pct.toFixed(0)+'%)'; cor='#C81E5B'; }
+  else if(saldo>0){ tag='Potencial — ainda há recurso a comprovar com produção ('+pct.toFixed(0)+'% executado)'; cor='#B4126A'; }
+  else { tag='Execução em dia — recurso antecipado já consumido'; cor='#12A97A'; }
+  const linha=(r,v,hint)=>`<tr><td style="padding:4px 10px;border-top:1px solid #f6e6ef">${r}${hint?'<br><span style="color:#9A6A86;font-size:11px">'+hint+'</span>':''}</td><td style="padding:4px 10px;border-top:1px solid #f6e6ef;text-align:right;font-weight:700;color:var(--wine);white-space:nowrap">${v}</td></tr>`;
+  box.innerHTML = `
+  <div style="border:1px solid #f3cfe3;border-radius:12px;overflow:hidden">
+    <div style="background:linear-gradient(90deg,var(--wine),var(--pink));color:#fff;padding:10px 14px;font-weight:700;font-size:13.5px">
+      🏛️ Viabilidade orçamentária — Programa Agora Tem Especialistas (SUS 360)
+      <span style="font-weight:400;font-size:11px;opacity:.92"> · ${PATE_COMP}</span></div>
+    <div style="padding:8px 14px;background:${cor}14;border-bottom:1px solid #f3cfe3;color:${cor};font-weight:700;font-size:13px">${tag}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+      ${linha('Recursos antecipados ao fundo', brl(rep), 'parcela única + emendas já transferidas ao fundo de saúde')}
+      ${linha('Produção aprovada (SIA/SIH)', brl(prod)+' · '+pct.toFixed(0)+'%', 'quanto já foi executado e comprovado')}
+      ${linha('Saldo a comprovar com produção', brl(saldo), 'NÃO é caixa — é recurso cuja contrapartida (serviço prestado) ainda falta entregar')}
+      ${linha('Componente ambulatorial (OCI)', brl(repAmb)+' → '+brl(prodAmb), 'é aqui que entra o seguimento das mulheres HPV+')}
+      ${linha('Mutirão das Mulheres', brl(mm), mm>0?'o gestor já tem valor nesta rubrica (adesão comprovada)':'ainda sem valor — oportunidade de enquadramento')}
+    </table>
+    <div style="padding:10px 14px;background:#fff0f7;font-size:12px;color:var(--wine);line-height:1.55">
+      <b>Como usar (sequência):</b> 1) o rastreio por DNA-HPV é pago por <b>MAC</b> (SIGTAP 0202100251); 2) os positivos geram <b>seguimento</b> (colposcopia, biópsia, EZT) = <b>produção ambulatorial OCI</b>; 3) essa produção <b>consome o saldo acima</b> e cumpre o encontro de contas do PATE (NT 33/2026); 4) pode ser contabilizada no <b>Mutirão das Mulheres</b>. Em resumo: o mutirão PinkPapa é o meio de ${ente} executar recurso federal já antecipado — evitando a glosa por não-produção.
+    </div>
+  </div>`;
+}
 function baixarPDF(){const r=montarPDF();if(r) r.doc.save(nomeArq());}
 
 /* ===== documentos técnicos (proposta técnica + nota técnica) em PDF ===== */
@@ -1148,6 +1195,7 @@ document.getElementById('mailNote').textContent = MAIL_ENDPOINT
 
 out = (HTML.replace("__TOTM__", TOTM_BR).replace("__BUILD__", BUILD)
        .replace("__DATA__", DATA_JS).replace("__UFSTATS__", UFSTATS_JS)
+       .replace("__PATE__", PATE_JS).replace("__PATEUF__", PATEUF_JS).replace("__PATECOMP__", PATE_COMP)
        .replace("__MAIL_ENDPOINT__", MAIL_ENDPOINT).replace("__MAIL_TOKEN__", MAIL_TOKEN)
        .replace("__CHART__", CHART).replace("__JSPDF__", JSPDF).replace("__AUTOTABLE__", AUTOTABLE))
 
