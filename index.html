@@ -147,7 +147,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
         <tr><td>Procedimento SIGTAP</td><td class="pp">0202100251 — Exame molecular de detecção de HPV</td></tr>
         <tr><td>Descrição técnica</td><td>Análise molecular de material cérvico-vaginal por amplificação de ácido nucleico (PCR) com genotipagem parcial ou estendida</td></tr>
         <tr><td>Faixa etária</td><td>25 a 64 anos (300–779 meses)</td></tr>
-        <tr><td>Financiamento</td><td>Média e Alta Complexidade (MAC)</td></tr>
+        <tr><td>Financiamento no SUS</td><td>Média e Alta Complexidade (MAC) — fonte do projeto selecionável na proposta (MAC, PAP, emenda, crédito, doação)</td></tr>
         <tr><td>Incorporação</td><td>Portaria SECTICS/MS nº 3, de 07/03/2024 (CONITEC)</td></tr>
         <tr><td>Diretriz</td><td>Rastreamento organizado — DNA-HPV substitui o Papanicolau (MS/INCA, 2024)</td></tr>
       </table>
@@ -208,11 +208,21 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
       <div class="selrow" style="margin-top:16px">
         <div class="fld"><label>Destinatário / autoridade (entra na proposta)</label><input type="text" id="in-dest-nome" placeholder="Ex.: Sr. Nicolau — Secretário de Saúde"></div>
         <div class="fld" style="max-width:280px"><label>E-mail do destinatário</label><input type="text" id="in-dest-email" placeholder="nome@municipio.gov.br"></div>
+        <div class="fld" style="max-width:280px"><label>Fonte de recurso (entra na proposta)</label>
+          <select id="in-fonte" onchange="calc()">
+            <option value="MAC">MAC — Média e Alta Complexidade</option>
+            <option value="PAP">PAP — Piso da Atenção Primária</option>
+            <option value="EMENDA">Emenda parlamentar</option>
+            <option value="CREDITO">Crédito / financiamento</option>
+            <option value="DOACAO">Doação / patrocínio</option>
+            <option value="PROPRIO">Recurso próprio do município</option>
+            <option value="OUTRO">Outra fonte (definir no plano)</option>
+          </select></div>
       </div>
       <div class="selrow" style="margin-top:8px">
-        <div class="fld"><label>Proponente — representante</label><input type="text" id="in-prop-nome" value="Gerson Gomes"></div>
-        <div class="fld"><label>Proponente — e-mail</label><input type="text" id="in-prop-email" value="g3.healthservice@proton.me"></div>
-        <div class="fld" style="max-width:200px"><label>Proponente — telefone</label><input type="text" id="in-prop-tel" value="+55 61 99255-7690"></div>
+        <div class="fld"><label>Executante / proponente</label><input type="text" id="in-prop-nome" value="PinkPapa · PinkLab"></div>
+        <div class="fld"><label>Contato — e-mail (opcional)</label><input type="text" id="in-prop-email" placeholder="contato@pinkpapa.com.br"></div>
+        <div class="fld" style="max-width:200px"><label>Contato — telefone (opcional)</label><input type="text" id="in-prop-tel" placeholder=""></div>
       </div>
       <div class="btnrow">
         <button class="btn" onclick="baixarPDF()">📄 Baixar proposta em PDF (PNSB)</button>
@@ -299,7 +309,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-10-30 15:04 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-10-30 15:44 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>/*!
@@ -793,6 +803,8 @@ const CUSTO_PRECOCE=1500, CUSTO_TARDIO=30000, VALOR_MORTE=1000000;
 const SENS_DNA=0.95, SENS_CITO=0.60, LETALIDADE_EVIT=0.40;
 const val = id => document.getElementById('in-'+id).value;
 
+const FONTES={MAC:'Média e Alta Complexidade (MAC)',PAP:'Piso da Atenção Primária (PAP)',EMENDA:'emenda parlamentar',CREDITO:'crédito / financiamento',DOACAO:'doação / patrocínio',PROPRIO:'recurso próprio do município',OUTRO:'fonte a definir no plano de trabalho'};
+function fonteSel(){const el=document.getElementById('in-fonte');const k=el?el.value:'MAC';return{key:k,label:FONTES[k]||k};}
 function calc(){
   if(!selected) return;
   ['cov-atual','cov-meta','adesao','prev','lesao','prog'].forEach(id=>{
@@ -847,7 +859,7 @@ function calc(){
     `Estimativa: <b>${fmt(casosEvit)}</b> cânceres e <b>${fmt(mortesEvit)}</b> mortes evitados; retorno socioeconômico de <b>${(roiSoc*100).toFixed(0)}%</b>. `+
     `Frente ao Papanicolau (não somado a ele), o DNA-HPV é custo-efetivo e reduz gastos no longo prazo (CONITEC: −30%).`;
 
-  lastCalc = {muni:selected, steps, custoPrograma, custoEvitado, valorSocial, roiSoc, custoPorMorte, custoPorCaso,
+  lastCalc = {muni:selected, steps, fonteLabel:fonteSel().label, custoPrograma, custoEvitado, valorSocial, roiSoc, custoPorMorte, custoPorCaso,
     lesoes, lesoesCitoPerde, testes, casosEvit, mortesEvit, preco, prazo, testesMes, isUF:selected[4],
     premissas:[['Cobertura atual',(covA*100).toFixed(0)+'%'],['Cobertura-meta',(covM*100).toFixed(0)+'%'],
       ['Adesão ao convite',(ades*100).toFixed(0)+'%'],['Prevalência HPV alto risco',(prev*100).toFixed(0)+'%'],
@@ -950,7 +962,7 @@ function pnsb(c){
   return {
     problema:'O câncer de colo do útero é o 3º mais frequente entre as brasileiras e a 1ª causa de morte por câncer na América Latina: 17.010 casos novos e mais de 7.100 óbitos por ano no Brasil (INCA; Observatório de Oncologia) — uma mulher a cada 90 minutos. É causado pelo HPV e quase 100% evitável com rastreio de qualidade, mas a citologia (Papanicolau) detecta apenas 55–70% das lesões de alto grau e a cobertura está em queda. Em '+alvo+', a cobertura estimada hoje é de '+covA+', para uma população-alvo de '+m[3].toLocaleString('pt-BR')+' mulheres de 25 a 64 anos (Censo 2022, IBGE).',
     necessidade:'Para levar '+alvo+' à cobertura-meta de '+covM+' (patamar da meta de 70% da OMS), é preciso incluir mais '+fmt(passo('Mulheres convocadas (busca ativa)'))+' mulheres no rastreio — cerca de '+fmt(c.testes)+' testes, considerando a adesão estimada, executados em '+c.prazo+' meses ('+fmt(c.testesMes)+' testes/mês). O rastreio oportunístico atual e a espera de 4 a 6 meses por consulta deixam muitas mulheres sem qualquer exame.',
-    solucao:'O PinkPapa é um autoteste de DNA-HPV homologado pela ANVISA, correspondente ao procedimento SIGTAP 0202100251 (Exame molecular de detecção de HPV), incorporado ao SUS pela Portaria SECTICS/MS nº 3/2024 e financiado por MAC. A autocoleta é feita pela própria mulher em UBS, UPA, centros comunitários ou hospitais — sem espéculo, sem mesa ginecológica, sem constrangimento, com aceitação próxima de 100%. Detecta 28 tipos de HPV (19 de alto risco), com sensibilidade de 90–95% (contra 55–70% do Papanicolau), antecipa o diagnóstico em até 10 anos e permite espaçar o rastreio para 5 anos após resultado negativo, com acompanhamento por inteligência artificial por 5 anos.',
+    solucao:'O PinkPapa é um autoteste de DNA-HPV homologado pela ANVISA, correspondente ao procedimento SIGTAP 0202100251 (Exame molecular de detecção de HPV), incorporado ao SUS pela Portaria SECTICS/MS nº 3/2024 e custeável por '+(c.fonteLabel||'Média e Alta Complexidade (MAC)')+'. A autocoleta é feita pela própria mulher em UBS, UPA, centros comunitários ou hospitais — sem espéculo, sem mesa ginecológica, sem constrangimento, com aceitação próxima de 100%. Detecta 28 tipos de HPV (19 de alto risco), com sensibilidade de 90–95% (contra 55–70% do Papanicolau), antecipa o diagnóstico em até 10 anos e permite espaçar o rastreio para 5 anos após resultado negativo, com acompanhamento por inteligência artificial por 5 anos.',
     beneficio:'Com as premissas simuladas, o investimento é de '+fmtMoney(c.custoPrograma)+', detectando ~'+fmt(c.lesoes)+' lesões de alto grau (das quais ~'+fmt(c.lesoesCitoPerde)+' que o Papanicolau perderia), evitando '+fmt(c.casosEvit)+' casos de câncer e '+fmt(c.mortesEvit)+' mortes — a um custo de '+fmtMoney(c.custoPorMorte)+' por morte evitada e retorno socioeconômico de '+(c.roiSoc*100).toFixed(0)+'%. Substituindo (e não somando-se a) o Papanicolau, o DNA-HPV é custo-efetivo e reduz o gasto do SUS no longo prazo (estimativa CONITEC: -30%), alinhando '+ente+' às metas 90-70-90 da OMS e ao indicador de cobertura do Previne Brasil.'
   };
 }
@@ -964,8 +976,8 @@ function montarPDF(){
   const alvo = isUF ? m[0] : m[0]+'/'+uf;
   const orgao = isUF ? UF_STATS[uf].orgao : ('Secretaria Municipal de Saúde de '+m[0]+'/'+uf);
   const dest=document.getElementById('in-dest-nome').value.trim();
-  const pNome=document.getElementById('in-prop-nome').value.trim()||'G3 Health Service';
-  const pMail=document.getElementById('in-prop-email').value.trim()||'g3.healthservice@proton.me';
+  const pNome=document.getElementById('in-prop-nome').value.trim()||'PinkPapa · PinkLab';
+  const pMail=document.getElementById('in-prop-email').value.trim();
   const pTel =document.getElementById('in-prop-tel').value.trim();
   const hoje=new Date();
   const ref='PINKPAPA-'+uf+'-'+(isUF?'UF':'MUN')+'-'+hoje.getFullYear()+String(hoje.getMonth()+1).padStart(2,'0')+String(hoje.getDate()).padStart(2,'0');
@@ -1054,7 +1066,7 @@ function montarPDF(){
   doc.setTextColor(...C_WINE);doc.setFont('helvetica','normal');doc.setFontSize(9.5);
   doc.text(fmt(c.testes)+' testes × '+fmtMoney(c.preco)+' por kit  ·  execução em '+c.prazo+' meses ('+fmt(c.testesMes)+'/mês)',M+20,420);
   doc.setFontSize(8);doc.setTextColor(...C_GREY);
-  doc.text('Financiamento: Média e Alta Complexidade (MAC) · SIGTAP 0202100251',M+20,436);
+  doc.text('Fonte de recurso: '+(c.fonteLabel||'Média e Alta Complexidade (MAC)')+' · procedimento SIGTAP 0202100251',M+20,436);
 
   // KPIs da capa
   const kw=(W-2*M-24)/3;
@@ -1072,11 +1084,10 @@ function montarPDF(){
   doc.setTextColor(255);doc.setFont('helvetica','normal');doc.setFontSize(10);
   doc.text(doc.splitTextToSize(dest||orgao,W/2-M-20),M,604);
   doc.text(doc.splitTextToSize(orgao,W/2-M-20),M,dest?620:620);
-  doc.setFont('helvetica','bold');doc.text('G3 Health Service',W/2+10,604);
+  doc.setFont('helvetica','bold');doc.text(doc.splitTextToSize(pNome,W/2-M-20),W/2+10,604);
   doc.setFont('helvetica','normal');doc.setFontSize(9);
-  doc.text(pNome,W/2+10,618);
-  doc.text(pMail,W/2+10,631);
-  if(pTel) doc.text(pTel,W/2+10,644);
+  doc.text('Executante técnico',W/2+10,618);
+  let py=631; if(pMail){doc.text(pMail,W/2+10,py);py+=13;} if(pTel){doc.text(pTel,W/2+10,py);}
 
   doc.setFontSize(8);doc.setTextColor(255,190,225);
   doc.text('Ref. '+ref,M,H-56);
@@ -1256,7 +1267,7 @@ async function enviarEmail(){
     'Valor total do projeto: '+fmtMoney(lastCalc.custoPrograma)+' ('+fmt(lastCalc.testes)+' testes).\n'+
     'Referência: '+r.ref+'\n\n'+
     'Permaneço à disposição.\n\n'+
-    document.getElementById('in-prop-nome').value.trim()+'\nG3 Health Service\n'+
+    (document.getElementById('in-prop-nome').value.trim()||'PinkPapa · PinkLab')+'\nExecutante técnico\n'+
     document.getElementById('in-prop-email').value.trim()+'\n'+document.getElementById('in-prop-tel').value.trim();
 
   if(!MAIL_ENDPOINT){
