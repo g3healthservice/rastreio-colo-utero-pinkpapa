@@ -64,11 +64,13 @@ input[type=text],input[type=number],select{width:100%;padding:10px 12px;border:1
 .ctl input[type=range]{flex:1.4;accent-color:var(--pink)}
 .ctl .rangeval{width:56px;text-align:right;font-weight:700;color:var(--wine);font-size:13px}
 .ctl input[type=number]{width:96px}
-.step{display:flex;align-items:center;gap:10px;margin:7px 0}
-.step .lbl{width:230px;font-size:12.5px}
-.step .bar-track{flex:1;background:#f6e6ef;border-radius:8px;height:16px;overflow:hidden}
+.step{display:flex;align-items:flex-start;gap:10px;margin:9px 0}
+.step .lbl{width:230px;font-size:12.5px;display:flex;flex-direction:column}
+.step .lbl .sub{font-size:10.5px;color:#9A6A86;font-weight:400;line-height:1.25;margin-top:2px}
+.step .bar-track{flex:1;background:#f6e6ef;border-radius:8px;height:16px;overflow:hidden;margin-top:2px}
 .step .bar-fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--pink2));border-radius:8px}
-.step .val{width:92px;text-align:right;font-weight:700;font-size:13px;color:var(--wine)}
+.step .val{width:92px;text-align:right;font-weight:700;font-size:13px;color:var(--wine);margin-top:1px}
+.funnel-head{background:#fff0f7;border:1px solid #f3cfe3;border-radius:10px;padding:10px 12px;font-size:13px;color:var(--wine);margin-bottom:10px;line-height:1.45}
 .roi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 .roi .b{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
 .roi .b b{display:block;font-size:22px;font-weight:800;color:var(--wine)}
@@ -191,6 +193,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
           <div class="ctl"><label>Prazo de execução (meses)</label><input type="number" id="in-prazo" value="12" min="1" max="60" oninput="calc()"></div>
         </div>
         <div>
+          <div id="funnel-head" class="funnel-head"></div>
           <div id="funnel-box"></div>
           <div class="roi">
             <div class="b"><b id="roi-custo">—</b><span>Investimento no rastreio</span></div>
@@ -272,8 +275,8 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
     <div class="panel"><b style="color:var(--wine)">Modelo do funil</b>
       <ol style="font-size:13.5px;padding-left:18px">
         <li>População-alvo = mulheres de 25 a 64 anos (IBGE, Censo 2022, SIDRA 9514) — do município ou somadas no estado.</li>
-        <li>Mulheres adicionais = alvo × (cobertura-meta − cobertura atual).</li>
-        <li>Testes DNA-HPV = adicionais × adesão ao convite.</li>
+        <li>Mulheres convocadas (busca ativa) = alvo × (cobertura-meta − cobertura atual).</li>
+        <li>Mulheres atendidas (testadas) = convocadas × adesão ao convite.</li>
         <li>HPV alto risco+ = testes × prevalência.</li>
         <li>Lesões NIC2+ = HPV+ × % de lesão; das quais a citologia perderia (95%−60%).</li>
         <li>Casos de câncer evitados = lesões × progressão evitada pelo tratamento precoce.</li>
@@ -296,7 +299,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-07-14 21:46 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-10-30 15:04 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>/*!
@@ -816,17 +819,24 @@ function calc(){
   const testesMes = prazo>0 ? testes/prazo : 0;
 
   const steps = [
-    ['População-alvo (25–64 anos)', popAlvo, popAlvo],
-    ['Mulheres adicionais no rastreio', adicionais, popAlvo],
-    ['Testes DNA-HPV (c/ adesão)', testes, popAlvo],
-    ['HPV de alto risco positivos', hpvPos, popAlvo],
-    ['Lesões NIC2+ detectadas', lesoes, popAlvo],
-    ['Casos de câncer evitados', casosEvit, popAlvo],
-    ['Mortes potencialmente evitadas', mortesEvit, popAlvo],
+    ['População-alvo (25–64 anos)', popAlvo, popAlvo, 'mulheres do município na faixa do rastreio (IBGE 2022)'],
+    ['Mulheres convocadas (busca ativa)', adicionais, popAlvo, 'ainda sem rastreio — para subir de '+(covA*100).toFixed(0)+'% a '+(covM*100).toFixed(0)+'% de cobertura'],
+    ['Mulheres atendidas (testadas)', testes, popAlvo, 'das convocadas que aderem ('+(ades*100).toFixed(0)+'%) — estas realizam a autocoleta'],
+    ['HPV de alto risco positivos', hpvPos, popAlvo, 'das testadas ('+(prev*100).toFixed(0)+'%) — seguem p/ colposcopia'],
+    ['Lesões NIC2+ detectadas', lesoes, popAlvo, 'das HPV+ ('+(pLes*100).toFixed(0)+'%) — '+fmt(lesoesCitoPerde)+' que o Papanicolau perderia'],
+    ['Casos de câncer evitados', casosEvit, popAlvo, 'por tratamento precoce da lesão'],
+    ['Mortes potencialmente evitadas', mortesEvit, popAlvo, 'letalidade evitável do câncer invasivo'],
   ];
-  document.getElementById('funnel-box').innerHTML = steps.map(s=>{
-    const pct=Math.max(1,(s[1]/s[2])*100);
-    return `<div class="step"><div class="lbl">${s[0]}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="val">${fmt(s[1])}</div></div>`;}).join('');
+  // barra proporcional à etapa ANTERIOR (funil de conversão) — torna visíveis as etapas pequenas
+  const base=[popAlvo,adicionais,testes,hpvPos,lesoes,casosEvit,mortesEvit];
+  document.getElementById('funnel-box').innerHTML = steps.map((s,i)=>{
+    const prev = i===0 ? s[1] : base[i-1];
+    const pct = prev>0 ? Math.max(2,Math.min(100,(s[1]/prev)*100)) : 2;
+    const conv = (i>0 && prev>0) ? ' · '+((s[1]/prev)*100).toFixed(s[1]/prev<0.1?1:0)+'% da etapa anterior' : '';
+    return `<div class="step"><div class="lbl">${s[0]}<span class="sub">${s[3]}${conv}</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="val">${fmt(s[1])}</div></div>`;}).join('');
+  document.getElementById('funnel-head').innerHTML =
+    'Neste cenário, o programa <b>convoca '+fmt(adicionais)+'</b> mulheres ainda sem rastreio e <b>atende (testa) '+fmt(testes)+'</b> — em '+prazo+' '+(prazo==1?'mês':'meses')+' ('+fmt(Math.round(testesMes))+' testes/mês). '+
+    'Dessas, ~<b>'+fmt(hpvPos)+'</b> dão HPV+ de alto risco e ~<b>'+fmt(lesoes)+'</b> têm lesão de alto grau a tratar.';
   document.getElementById('roi-custo').textContent=fmtMoney(custoPrograma);
   document.getElementById('roi-cpm').textContent = mortesEvit>0?fmtMoney(custoPorMorte):'—';
   document.getElementById('roi-soc').textContent = (roiSoc>=0?'+':'')+fmtPct(roiSoc);
@@ -939,7 +949,7 @@ function pnsb(c){
   const ente = m[4] ? 'o estado' : 'o município';
   return {
     problema:'O câncer de colo do útero é o 3º mais frequente entre as brasileiras e a 1ª causa de morte por câncer na América Latina: 17.010 casos novos e mais de 7.100 óbitos por ano no Brasil (INCA; Observatório de Oncologia) — uma mulher a cada 90 minutos. É causado pelo HPV e quase 100% evitável com rastreio de qualidade, mas a citologia (Papanicolau) detecta apenas 55–70% das lesões de alto grau e a cobertura está em queda. Em '+alvo+', a cobertura estimada hoje é de '+covA+', para uma população-alvo de '+m[3].toLocaleString('pt-BR')+' mulheres de 25 a 64 anos (Censo 2022, IBGE).',
-    necessidade:'Para levar '+alvo+' à cobertura-meta de '+covM+' (patamar da meta de 70% da OMS), é preciso incluir mais '+fmt(passo('Mulheres adicionais no rastreio'))+' mulheres no rastreio — cerca de '+fmt(c.testes)+' testes, considerando a adesão estimada, executados em '+c.prazo+' meses ('+fmt(c.testesMes)+' testes/mês). O rastreio oportunístico atual e a espera de 4 a 6 meses por consulta deixam muitas mulheres sem qualquer exame.',
+    necessidade:'Para levar '+alvo+' à cobertura-meta de '+covM+' (patamar da meta de 70% da OMS), é preciso incluir mais '+fmt(passo('Mulheres convocadas (busca ativa)'))+' mulheres no rastreio — cerca de '+fmt(c.testes)+' testes, considerando a adesão estimada, executados em '+c.prazo+' meses ('+fmt(c.testesMes)+' testes/mês). O rastreio oportunístico atual e a espera de 4 a 6 meses por consulta deixam muitas mulheres sem qualquer exame.',
     solucao:'O PinkPapa é um autoteste de DNA-HPV homologado pela ANVISA, correspondente ao procedimento SIGTAP 0202100251 (Exame molecular de detecção de HPV), incorporado ao SUS pela Portaria SECTICS/MS nº 3/2024 e financiado por MAC. A autocoleta é feita pela própria mulher em UBS, UPA, centros comunitários ou hospitais — sem espéculo, sem mesa ginecológica, sem constrangimento, com aceitação próxima de 100%. Detecta 28 tipos de HPV (19 de alto risco), com sensibilidade de 90–95% (contra 55–70% do Papanicolau), antecipa o diagnóstico em até 10 anos e permite espaçar o rastreio para 5 anos após resultado negativo, com acompanhamento por inteligência artificial por 5 anos.',
     beneficio:'Com as premissas simuladas, o investimento é de '+fmtMoney(c.custoPrograma)+', detectando ~'+fmt(c.lesoes)+' lesões de alto grau (das quais ~'+fmt(c.lesoesCitoPerde)+' que o Papanicolau perderia), evitando '+fmt(c.casosEvit)+' casos de câncer e '+fmt(c.mortesEvit)+' mortes — a um custo de '+fmtMoney(c.custoPorMorte)+' por morte evitada e retorno socioeconômico de '+(c.roiSoc*100).toFixed(0)+'%. Substituindo (e não somando-se a) o Papanicolau, o DNA-HPV é custo-efetivo e reduz o gasto do SUS no longo prazo (estimativa CONITEC: -30%), alinhando '+ente+' às metas 90-70-90 da OMS e ao indicador de cobertura do Previne Brasil.'
   };
