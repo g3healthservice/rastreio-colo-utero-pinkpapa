@@ -64,6 +64,17 @@ input[type=text],input[type=number],select{width:100%;padding:10px 12px;border:1
 .ctl input[type=range]{flex:1.4;accent-color:var(--pink)}
 .ctl .rangeval{width:56px;text-align:right;font-weight:700;color:var(--wine);font-size:13px}
 .ctl input[type=number]{width:96px}
+.driver{background:linear-gradient(135deg,#fff2f8,#ffe1f1);border:2px solid var(--pink);border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:0 3px 14px rgba(230,0,126,.14)}
+.driver h4{margin:0 0 2px;color:var(--wine);font-size:14.5px;display:flex;align-items:center;gap:6px;font-weight:800}
+.driver .hint{font-size:11.5px;color:var(--muted);margin:0 0 12px;line-height:1.35}
+.driver .ctl{margin:6px 0}.driver .ctl label{font-weight:700;color:var(--ink)}
+.driver .ctl input[type=range]{flex:1.4;height:6px}
+.driver .ctl .rangeval{width:52px;font-size:16px;color:var(--pink)}
+.driver .vfield{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--pink2)}
+.driver .vfield label{flex:1;margin:0;font-weight:700;color:var(--ink);line-height:1.25}
+.driver .vfield .pre{color:var(--wine);font-weight:800}
+.driver .vfield input{width:150px;font-weight:800;font-size:15px;border:2px solid var(--pink);border-radius:8px;padding:7px 9px;text-align:right;color:var(--wine)}
+.premlabel{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 2px}
 .step{display:flex;align-items:flex-start;gap:10px;margin:9px 0}
 .step .lbl{width:230px;font-size:12.5px;display:flex;flex-direction:column}
 .step .lbl .sub{font-size:10.5px;color:#9A6A86;font-weight:400;line-height:1.25;margin-top:2px}
@@ -183,8 +194,14 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
       <div class="muni-hero"><div class="mn" id="mn"></div><div class="mt" id="mt"></div><div class="mt" id="mcov" style="margin-top:6px;font-size:12px;line-height:1.4"></div></div>
       <div class="grid2">
         <div>
+          <div class="driver">
+            <h4>🎯 Defina o tamanho da proposta</h4>
+            <p class="hint">Use a <b>cobertura-meta</b> ou digite direto o <b>valor-alvo em R$</b> — os dois andam juntos e <b>recalculam automaticamente</b> testes, custo, lesões, casos e mortes evitados logo abaixo.</p>
+            <div class="ctl"><label>Cobertura-meta de rastreio (OMS: 70%)</label><input type="range" id="in-cov-meta" min="1" max="100" step="0.1" value="70" oninput="calc()"><span class="rangeval" id="v-cov-meta">70%</span></div>
+            <div class="vfield"><label>Valor-alvo da proposta<br><span class="hint" style="margin:0">ajusta a meta para caber neste orçamento</span></label><span class="pre">R$</span><input type="number" id="in-valor-alvo" min="0" step="1000" placeholder="0" oninput="fromValor()"></div>
+          </div>
+          <div class="premlabel">Premissas do cenário (ajustáveis)</div>
           <div class="ctl"><label>Cobertura atual de rastreio (SISCAN — ajustável)</label><input type="range" id="in-cov-atual" min="1" max="100" value="40" oninput="calc()"><span class="rangeval" id="v-cov-atual">40%</span></div>
-          <div class="ctl"><label>Cobertura-meta (OMS: 70%)</label><input type="range" id="in-cov-meta" min="1" max="100" value="70" oninput="calc()"><span class="rangeval" id="v-cov-meta">70%</span></div>
           <div class="ctl"><label>Adesão ao convite</label><input type="range" id="in-adesao" min="1" max="100" value="80" oninput="calc()"><span class="rangeval" id="v-adesao">80%</span></div>
           <div class="ctl"><label>Prevalência de HPV de alto risco</label><input type="range" id="in-prev" min="1" max="30" value="10" oninput="calc()"><span class="rangeval" id="v-prev">10%</span></div>
           <div class="ctl"><label>Lesões alto grau (NIC2+) entre HPV+</label><input type="range" id="in-lesao" min="1" max="40" value="12" oninput="calc()"><span class="rangeval" id="v-lesao">12%</span></div>
@@ -320,7 +337,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-10-30 20:43 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-10-30 20:56 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>/*!
@@ -842,10 +859,22 @@ const INSTRUMENTOS={
     docs:['Chamamento público (edital) ou justificativa de dispensa/inexigibilidade (arts. 30–31)','Plano de Trabalho (art. 22): metas, cronograma e memória de cálculo','Comprovação da OSC: CNPJ, estatuto e objeto social compatível','Certidões de regularidade (fiscal, trabalhista, FGTS) e consulta CEPIM/CADIN','Declarações dos arts. 33 e 34 (capacidade técnica e operacional)','Designação do gestor da parceria e da comissão de monitoramento e avaliação','Conta bancária específica e movimentação eletrônica dos recursos','Prestação de contas e relatório de execução do objeto (arts. 63–72)']},
 };
 function instrSel(){const el=document.getElementById('in-instrumento');const k=el?el.value:'CONTRATO';return Object.assign({key:k},INSTRUMENTOS[k]||INSTRUMENTOS.CONTRATO);}
+// valor-alvo (R$) -> cobertura-meta: inverte custoPrograma = popAlvo*(covM-covA)*ades*preco
+function fromValor(){
+  if(!selected) return;
+  const popAlvo=selected[3];
+  const covA=+val('cov-atual')/100, ades=+val('adesao')/100, preco=+val('preco')||0;
+  const valor=+document.getElementById('in-valor-alvo').value||0;
+  if(valor<=0||preco<=0||ades<=0||popAlvo<=0){ calc(); return; }
+  const adicionais=(valor/preco)/ades;
+  const covM=Math.min(1, Math.max(covA, covA + adicionais/popAlvo));
+  document.getElementById('in-cov-meta').value=Math.max(1,(covM*100).toFixed(1));
+  calc();
+}
 function calc(){
   if(!selected) return;
   ['cov-atual','cov-meta','adesao','prev','lesao','prog'].forEach(id=>{
-    const el=document.getElementById('v-'+id); if(el) el.textContent=val(id)+'%'; });
+    const el=document.getElementById('v-'+id); if(el) el.textContent=Math.round(+val(id))+'%'; });
   const popAlvo=selected[3];
   const covA=+val('cov-atual')/100, covM=+val('cov-meta')/100, ades=+val('adesao')/100;
   const prev=+val('prev')/100, pLes=+val('lesao')/100, pProg=+val('prog')/100;
@@ -887,6 +916,7 @@ function calc(){
     'Neste cenário, o programa <b>convoca '+fmt(adicionais)+'</b> mulheres ainda sem rastreio e <b>atende (testa) '+fmt(testes)+'</b> — em '+prazo+' '+(prazo==1?'mês':'meses')+' ('+fmt(Math.round(testesMes))+' testes/mês). '+
     'Dessas, ~<b>'+fmt(hpvPos)+'</b> dão HPV+ de alto risco e ~<b>'+fmt(lesoes)+'</b> têm lesão de alto grau a tratar.';
   renderPate();
+  const vinp=document.getElementById('in-valor-alvo'); if(vinp && document.activeElement!==vinp) vinp.value=Math.round(custoPrograma);
   document.getElementById('roi-custo').textContent=fmtMoney(custoPrograma);
   document.getElementById('roi-cpm').textContent = mortesEvit>0?fmtMoney(custoPorMorte):'—';
   document.getElementById('roi-soc').textContent = (roiSoc>=0?'+':'')+fmtPct(roiSoc);
