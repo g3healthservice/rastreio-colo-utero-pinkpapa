@@ -223,7 +223,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
             <h4>🎯 Defina o tamanho da proposta</h4>
             <p class="hint">Use a <b>cobertura-meta</b> ou digite direto o <b>valor-alvo em R$</b> — os dois andam juntos e <b>recalculam automaticamente</b> testes, custo, lesões, casos e mortes evitados logo abaixo.</p>
             <div class="ctl"><label>Cobertura-meta de rastreio (OMS: 70%)</label><input type="range" id="in-cov-meta" min="1" max="100" step="0.1" value="70" oninput="calc()"><span class="rangeval" id="v-cov-meta">70%</span></div>
-            <div class="vfield"><label>Valor-alvo da proposta<br><span class="hint" style="margin:0">ajusta a meta para caber neste orçamento</span></label><span class="pre">R$</span><input type="number" id="in-valor-alvo" min="0" step="1000" placeholder="0" oninput="fromValor()"></div>
+            <div class="vfield"><label>Valor-alvo da proposta<br><span class="hint" style="margin:0">ajusta a meta para caber neste orçamento</span></label><span class="pre">R$</span><input type="text" inputmode="decimal" id="in-valor-alvo" placeholder="0,00" oninput="fromValor()" onblur="fmtValor()"></div>
           </div>
           <div class="premlabel">Premissas do cenário (ajustáveis)</div>
           <div class="ctl"><label>Cobertura atual de rastreio (SISCAN — ajustável)</label><input type="range" id="in-cov-atual" min="1" max="100" value="40" oninput="calc()"><span class="rangeval" id="v-cov-atual">40%</span></div>
@@ -362,7 +362,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-10-30 21:08 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-10-30 21:17 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>
@@ -899,15 +899,26 @@ const INSTRUMENTOS={
 function instrSel(){const el=document.getElementById('in-instrumento');const k=el?el.value:'CONTRATO';return Object.assign({key:k},INSTRUMENTOS[k]||INSTRUMENTOS.CONTRATO);}
 // valor-alvo (R$) -> cobertura-meta: inverte custoPrograma = popAlvo*(covM-covA)*ades*preco
 function fromValor(){
+  // máscara R$ pt-BR: agrupa milhares com ponto enquanto digita e mantém a vírgula dos centavos
+  const vinp=document.getElementById('in-valor-alvo');
+  const temVirg=vinp.value.includes(',');
+  let [int,dec]=vinp.value.replace(/[^\d,]/g,'').split(',');
+  dec=(dec||'').slice(0,2);
+  vinp.value=(int?(+int).toLocaleString('pt-BR'):(temVirg?'0':''))+(temVirg?','+dec:'');
+  const valor=parseFloat((int||'0')+'.'+(dec||'0'))||0;
   if(!selected) return;
   const popAlvo=selected[3];
   const covA=+val('cov-atual')/100, ades=+val('adesao')/100, preco=+val('preco')||0;
-  const valor=+document.getElementById('in-valor-alvo').value||0;
   if(valor<=0||preco<=0||ades<=0||popAlvo<=0){ calc(); return; }
   const adicionais=(valor/preco)/ades;
   const covM=Math.min(1, Math.max(covA, covA + adicionais/popAlvo));
   document.getElementById('in-cov-meta').value=Math.max(1,(covM*100).toFixed(1));
   calc();
+}
+function fmtValor(){ // ao sair do campo, normaliza para 2 casas (R$ 4.011.245,00)
+  const vinp=document.getElementById('in-valor-alvo');
+  const valor=parseFloat(vinp.value.replace(/\./g,'').replace(',','.'))||0;
+  vinp.value=valor?valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
 }
 function calc(){
   if(!selected) return;
@@ -954,7 +965,7 @@ function calc(){
     'Neste cenário, o programa <b>convoca '+fmt(adicionais)+'</b> mulheres ainda sem rastreio e <b>atende (testa) '+fmt(testes)+'</b> — em '+prazo+' '+(prazo==1?'mês':'meses')+' ('+fmt(Math.round(testesMes))+' testes/mês). '+
     'Dessas, ~<b>'+fmt(hpvPos)+'</b> dão HPV+ de alto risco e ~<b>'+fmt(lesoes)+'</b> têm lesão de alto grau a tratar.';
   renderPate();
-  const vinp=document.getElementById('in-valor-alvo'); if(vinp && document.activeElement!==vinp) vinp.value=Math.round(custoPrograma);
+  const vinp=document.getElementById('in-valor-alvo'); if(vinp && document.activeElement!==vinp) vinp.value=custoPrograma.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   document.getElementById('roi-custo').textContent=fmtMoney(custoPrograma);
   document.getElementById('roi-cpm').textContent = mortesEvit>0?fmtMoney(custoPorMorte):'—';
   document.getElementById('roi-soc').textContent = (roiSoc>=0?'+':'')+fmtPct(roiSoc);
