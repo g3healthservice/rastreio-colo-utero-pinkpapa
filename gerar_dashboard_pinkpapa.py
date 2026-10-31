@@ -907,7 +907,7 @@ function montarPDF(){
   doc.autoTable({startY:y,
     head:[['Fase','Atividades','Prazo','Responsável']],
     body:[
-      ['1. Planejamento','Pactuação com a Secretaria, definição das unidades de coleta (UBS/UPA/centros comunitários), meta por unidade e cadastro no SISCAN.','Mês 1','G3 + Secretaria'],
+      ['1. Planejamento','Pactuação com a Secretaria, definição das unidades de coleta (UBS/UPA/centros comunitários), meta por unidade e cadastro no SISCAN (acesso: siscan.saude.gov.br/login.jsf).','Mês 1','G3 + Secretaria'],
       ['2. Capacitação','Treinamento das equipes da Atenção Primária (ACS/enfermagem) para orientar a autocoleta e registrar o procedimento SIGTAP 0202100251.','Mês 1–2','G3 / PinkLab'],
       ['3. Convocação','Busca ativa das mulheres de 25 a 64 anos, priorizando as que nunca se rastrearam; campanha local e agendamento.','Mês 2 em diante','Secretaria + ACS'],
       ['4. Autocoleta','Entrega e retirada do coletor; a mulher realiza a autocoleta sem espéculo e sem constrangimento. Sem necessidade de mesa ginecológica.','Contínuo','Unidades de saúde'],
