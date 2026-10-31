@@ -8,7 +8,7 @@ cp index.html ~/Downloads/Dashboard_PinkPapa_Municipios.html
 git add -A
 git commit -q -m "Atualiza painel PinkPapa ($(date +%F' '%H:%M))
 
-Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>" || echo "nada a commitar"
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" || echo "nada a commitar"
 git fetch -q origin main && git rebase -q origin/main || true
 git push -q origin main
 echo "publicado: https://g3healthservice.github.io/rastreio-colo-utero-pinkpapa/"

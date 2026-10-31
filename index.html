@@ -111,6 +111,13 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 .tag{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 12px;font-size:12px;margin-top:14px}
 .note{font-size:11.5px;color:var(--muted);margin-top:6px}
 .src2{font-size:11px;color:var(--muted)}
+.abas{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.abas .wrap{display:flex;gap:4px;overflow-x:auto;padding-top:8px;padding-bottom:0;scrollbar-width:thin}
+.aba{flex:0 0 auto;background:none;border:none;border-bottom:3px solid transparent;padding:9px 12px;font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.aba:hover{color:var(--wine)}
+.aba.on{color:var(--pink);border-bottom-color:var(--pink)}
+.oculta{display:none!important}
+@media print{.abas{display:none}.oculta{display:block!important}}
 </style>
 </head>
 <body>
@@ -127,6 +134,17 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
   </div>
   <div class="tag">Autoteste DNA-HPV homologado ANVISA · SIGTAP 0202100251 · Incorporado ao SUS (Portaria SECTICS/MS nº 3/2024)</div>
 </div></div>
+
+<nav class="abas" aria-label="Seções do painel"><div class="wrap" role="tablist">
+  <button class="aba on" role="tab" onclick="abrir(0)">Capa</button>
+  <button class="aba" role="tab" onclick="abrir(1)">01 · O problema</button>
+  <button class="aba" role="tab" onclick="abrir(2)">02 · A solução e seu enquadramento oficial</button>
+  <button class="aba" role="tab" onclick="abrir(3)">03 · Dimensionamento</button>
+  <button class="aba" role="tab" onclick="abrir(4)">04 · Custo-benefício</button>
+  <button class="aba" role="tab" onclick="abrir(5)">05 · Metas e cobertura</button>
+  <button class="aba" role="tab" onclick="abrir(6)">06 · Ranking</button>
+  <button class="aba" role="tab" onclick="abrir(7)">07 · Metodologia</button>
+</div></nav>
 
 <section><div class="wrap">
   <div class="h">01 · O problema</div>
@@ -301,7 +319,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
     <div class="tab on" id="rtab-mun" onclick="setRank('mun')">Municípios</div>
     <div class="tab" id="rtab-uf" onclick="setRank('uf')">Estados</div>
   </div>
-  <p class="lead">Clique em uma linha para carregá-la no dimensionamento acima. Para um município específico, use a busca da seção 03.</p>
+  <p class="lead">Clique em uma linha para carregá-la na aba 03 · Dimensionamento. Para um município específico, use a busca daquela aba.</p>
   <div id="rankWrap"><table class="rank"><thead id="rankHead"></thead><tbody id="rankBody"></tbody></table></div>
   <div class="btnrow"><button class="btn sec" id="btnRankMore" onclick="toggleRank()">Ver ranking completo ▾</button><span class="note" id="rankCount"></span></div>
 </div></section>
@@ -337,9 +355,22 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-10-30 20:56 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-10-30 21:01 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
+<script>
+// Abas: capa (hero) + uma por <section>; #aba-N na URL abre direto e permite compartilhar o link da aba
+const ABAS=[document.querySelector('.hero'),...document.querySelectorAll('body>section')];
+function abrir(n,semHash){
+  n=Math.max(0,Math.min(ABAS.length-1,n|0));
+  ABAS.forEach((el,i)=>el.classList.toggle('oculta',i!==n));
+  document.querySelectorAll('.aba').forEach((b,i)=>{b.classList.toggle('on',i===n);b.setAttribute('aria-selected',i===n)});
+  document.querySelectorAll('.aba')[n].scrollIntoView({block:'nearest',inline:'center'});
+  if(!semHash)history.replaceState(null,'','#aba-'+n);
+  window.scrollTo(0,0);
+}
+abrir(+(location.hash.match(/^#aba-(\d+)$/)||[])[1]||0,true);
+</script>
 <script>/*!
  * Chart.js v4.4.1
  * https://www.chartjs.org
@@ -958,7 +989,7 @@ function renderRank(){
     const total=MUNICIPIOS.length, n=rankExpanded?RANK_MAX_MUN:RANK_TOP;
     head.innerHTML='<tr><th>#</th><th>Município</th><th>UF</th><th>Mulheres 25–64</th><th>População</th><th>% alvo</th></tr>';
     body.innerHTML=MUNICIPIOS.slice(0,n).map((m,i)=>
-      `<tr onclick="pick('${m[0].replace(/'/g,"\\'")}','${m[1]}');document.querySelector('.panel').scrollIntoView({behavior:'smooth'})"><td>${i+1}</td><td>${m[0]}</td><td>${m[1]}</td><td>${m[3].toLocaleString('pt-BR')}</td><td>${m[2].toLocaleString('pt-BR')}</td><td>${(100*m[3]/m[2]).toFixed(1)}%</td></tr>`).join('');
+      `<tr onclick="pick('${m[0].replace(/'/g,"\\'")}','${m[1]}');abrir(3)"><td>${i+1}</td><td>${m[0]}</td><td>${m[1]}</td><td>${m[3].toLocaleString('pt-BR')}</td><td>${m[2].toLocaleString('pt-BR')}</td><td>${(100*m[3]/m[2]).toFixed(1)}%</td></tr>`).join('');
     document.getElementById('rankCount').textContent = rankExpanded
       ? 'Mostrando os '+Math.min(n,total)+' maiores de '+total.toLocaleString('pt-BR')+' municípios — use a busca acima para os demais.'
       : 'Mostrando o Top 10 de '+total.toLocaleString('pt-BR')+' municípios.';
@@ -967,7 +998,7 @@ function renderRank(){
     const n=rankExpanded?ufs.length:RANK_TOP;
     head.innerHTML='<tr><th>#</th><th>Estado</th><th>UF</th><th>Mulheres 25–64</th><th>População</th><th>Municípios</th></tr>';
     body.innerHTML=ufs.slice(0,n).map(([uf,s],i)=>
-      `<tr onclick="pickUF('${uf}');document.querySelector('.panel').scrollIntoView({behavior:'smooth'})"><td>${i+1}</td><td>${s.nome}</td><td>${uf}</td><td>${s.m.toLocaleString('pt-BR')}</td><td>${s.pop.toLocaleString('pt-BR')}</td><td>${s.n}</td></tr>`).join('');
+      `<tr onclick="pickUF('${uf}');abrir(3)"><td>${i+1}</td><td>${s.nome}</td><td>${uf}</td><td>${s.m.toLocaleString('pt-BR')}</td><td>${s.pop.toLocaleString('pt-BR')}</td><td>${s.n}</td></tr>`).join('');
     document.getElementById('rankCount').textContent = rankExpanded
       ? 'Mostrando todos os 27 estados.' : 'Mostrando o Top 10 de 27 estados.';
     document.getElementById('btnRankMore').style.display = 'inline-block';
