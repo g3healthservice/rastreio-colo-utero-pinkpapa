@@ -916,7 +916,8 @@ function montarPDF(){
       ['7. Monitoramento por IA','Acompanhamento por inteligência artificial por até 5 anos, com painel de cobertura e indicadores (Previne Brasil / metas 90-70-90).','5 anos','G3 + PinkLab'],
     ],
     theme:'grid',headStyles:{fillColor:C_PINK,fontSize:9},styles:{fontSize:8.4,cellPadding:5,lineColor:[240,215,230]},
-    columnStyles:{0:{cellWidth:80,fontStyle:'bold',textColor:C_WINE},2:{cellWidth:66},3:{cellWidth:88}},margin:{left:M,right:M}});
+    columnStyles:{0:{cellWidth:80,fontStyle:'bold',textColor:C_WINE},2:{cellWidth:66},3:{cellWidth:88}},margin:{left:M,right:M},
+    didDrawCell:function(d){ if(d.section==='body'&&d.row.index===0&&d.column.index===1){ doc.link(d.cell.x,d.cell.y,d.cell.width,d.cell.height,{url:'https://siscan.saude.gov.br/login.jsf'}); } }});
   y=doc.lastAutoTable.finalY+16;
 
   /* ---- Cronograma (Gantt vetorial), escalado ao prazo de execução ---- */
