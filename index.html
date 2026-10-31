@@ -112,15 +112,32 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 .note{font-size:11.5px;color:var(--muted);margin-top:6px}
 .src2{font-size:11px;color:var(--muted)}
 .abas{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.05)}
-.abas .wrap{display:flex;gap:4px;overflow-x:auto;padding-top:8px;padding-bottom:0;scrollbar-width:thin}
+.abas .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;padding-top:6px;padding-bottom:0}
+@media(max-width:640px){.abas .wrap{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}.aba.destaque{order:-1;margin-left:0}.aba .longo{display:none}}
 .aba{flex:0 0 auto;background:none;border:none;border-bottom:3px solid transparent;padding:9px 12px;font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
 .aba:hover{color:var(--wine)}
 .aba.on{color:var(--pink);border-bottom-color:var(--pink)}
+.aba.destaque{background:var(--pink);color:#fff;border:none;border-radius:999px;margin:3px 6px;padding:6px 16px;font-weight:800;box-shadow:0 2px 8px rgba(230,0,126,.35)}
+.aba.destaque:hover{color:#fff;filter:brightness(1.08)}
+.aba.destaque.on{color:#fff;box-shadow:0 0 0 3px #ffc9e4,0 2px 8px rgba(230,0,126,.35)}
+.cta{margin-top:18px;background:#fff;color:var(--pink);border:none;border-radius:12px;padding:13px 22px;font:inherit;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.cta:hover{filter:brightness(.97)}
 .oculta{display:none!important}
 @media print{.abas{display:none}.oculta{display:block!important}}
 </style>
 </head>
 <body>
+
+<nav class="abas" aria-label="Seções do painel"><div class="wrap" role="tablist">
+  <button class="aba on" role="tab" onclick="abrir(0)">Capa</button>
+  <button class="aba" role="tab" onclick="abrir(1)">01 · O problema</button>
+  <button class="aba" role="tab" onclick="abrir(2)">02 · A solução<span class="longo"> e seu enquadramento oficial</span></button>
+  <button class="aba destaque" role="tab" onclick="abrir(3)">🎯 03 · Dimensionamento</button>
+  <button class="aba" role="tab" onclick="abrir(4)">04 · Custo-benefício</button>
+  <button class="aba" role="tab" onclick="abrir(5)">05 · Metas e cobertura</button>
+  <button class="aba" role="tab" onclick="abrir(6)">06 · Ranking</button>
+  <button class="aba" role="tab" onclick="abrir(7)">07 · Metodologia</button>
+</div></nav>
 
 <div class="hero"><div class="wrap">
   <div class="brand">G3 Health Service · PinkPapa (PinkLab)</div>
@@ -133,18 +150,8 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
     <div class="kpi"><b>R$ 590</b><span>custo do kit × dezenas de milhares no tratamento tardio</span></div>
   </div>
   <div class="tag">Autoteste DNA-HPV homologado ANVISA · SIGTAP 0202100251 · Incorporado ao SUS (Portaria SECTICS/MS nº 3/2024)</div>
+  <div><button class="cta" onclick="abrir(3)">🎯 Dimensionar meu município ou estado →</button></div>
 </div></div>
-
-<nav class="abas" aria-label="Seções do painel"><div class="wrap" role="tablist">
-  <button class="aba on" role="tab" onclick="abrir(0)">Capa</button>
-  <button class="aba" role="tab" onclick="abrir(1)">01 · O problema</button>
-  <button class="aba" role="tab" onclick="abrir(2)">02 · A solução e seu enquadramento oficial</button>
-  <button class="aba" role="tab" onclick="abrir(3)">03 · Dimensionamento</button>
-  <button class="aba" role="tab" onclick="abrir(4)">04 · Custo-benefício</button>
-  <button class="aba" role="tab" onclick="abrir(5)">05 · Metas e cobertura</button>
-  <button class="aba" role="tab" onclick="abrir(6)">06 · Ranking</button>
-  <button class="aba" role="tab" onclick="abrir(7)">07 · Metodologia</button>
-</div></nav>
 
 <section><div class="wrap">
   <div class="h">01 · O problema</div>
@@ -355,7 +362,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-10-30 21:02 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-10-30 21:07 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>
@@ -365,7 +372,7 @@ function abrir(n,semHash){
   n=Math.max(0,Math.min(ABAS.length-1,n|0));
   ABAS.forEach((el,i)=>el.classList.toggle('oculta',i!==n));
   document.querySelectorAll('.aba').forEach((b,i)=>{b.classList.toggle('on',i===n);b.setAttribute('aria-selected',i===n)});
-  document.querySelectorAll('.aba')[n].scrollIntoView({block:'nearest',inline:'center'});
+  document.querySelectorAll('.aba')[n].scrollIntoView({block:'nearest',inline:'nearest'});
   if(!semHash)history.replaceState(null,'','#aba-'+n);
   window.scrollTo(0,0);
 }
