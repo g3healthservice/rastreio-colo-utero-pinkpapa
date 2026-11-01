@@ -369,7 +369,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-10-31 21:43 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-10-31 21:56 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>
@@ -1633,126 +1633,305 @@ function genNotaTecnica(doc,c,append){
   };
   return _renderTec(doc,'Nota Técnica — Mutirão PinkPapa',x.alvo,meta,sumario,body,append);
 }
-function genETP(doc,c,append){
-  const x=_ctx(c);
-  const meta={tipo:'ESTUDO TÉCNICO PRELIMINAR — ETP', sub:'Rastreamento organizado do câncer do colo do útero por DNA-HPV (autocoleta) — '+x.alvo,
-    linhas:['Unidade demandante: '+x.orgao, 'Base legal: art. 18, §1º, da Lei nº 14.133/2021  ·  Rota: '+x.instr.label,
-      'Apoio técnico: PinkPapa / PinkLab — documento em modelo (campos entre colchetes a preencher)']};
-  const sumario=['1. Descrição da necessidade','2. Requisitos da contratação','3. Natureza do serviço','4. Dimensionamento',
-    '5. Mercado e estimativa do valor','6. Rota jurídica','7. Resultados e viabilidade'];
-  const body=(w)=>{
-  w.h1('1. Descrição da necessidade da contratação');
-  w.p('O câncer do colo do útero é quase 100% evitável por rastreio de qualidade, mas concentra mortalidade justamente nas mulheres que o modelo oportunístico não alcança. Em '+x.alvo+' a cobertura estimada é de '+(c.covA*100).toFixed(0)+'%, abaixo da meta de 70% (metas 90-70-90 da OMS). A CONITEC (2024) recomendou o teste molecular DNA-HPV como exame primário, incorporado pela Portaria SECTICS/MS nº 3/2024 (SIGTAP 0202100251). A autocoleta tem aceitação ~100% e alcança quem nunca se rastreou.');
-  w.h1('2. Requisitos da contratação');
-  ['Kit de autocoleta vaginal com registro ANVISA e validade não inferior a 12 meses;',
-   'Exame de biologia molecular com genotipagem do DNA-HPV (mín. 28 genótipos, identificando 16 e 18);',
-   'Laboratório com inscrição no SCNES/CNES, licença sanitária para diagnóstico molecular e RT habilitado;',
-   'Laudo em até 48h; logística de transporte com cadeia de custódia;',
-   'Plataforma digital (web/mobile) com rastreabilidade, alerta de resultado alterado e seguimento por até 5 anos;',
-   'Conformidade integral à LGPD (Lei nº 13.709/2018) e PGRSS (RDC ANVISA nº 222/2018).'].forEach(t=>w.li(t));
-  w.h1('3. Natureza do serviço');
-  w.p('A operação de campo (autocoleta realizada pela própria usuária, com apoio das equipes da Atenção Primária — ACS/enfermagem) é de natureza comum, não constitui ato médico nem exige profissional médico especialista. O processamento laboratorial (PCR com genotipagem do HPV) é atividade técnica especializada de laboratório, sob responsabilidade técnica própria. Os atos médicos especializados (colposcopia, biópsia, EZT e tratamento) não integram este objeto e permanecem na rede pública (segregação de funções).');
-  w.h1('4. Dimensionamento — 1º ciclo');
-  w.tbl(['Parâmetro','Estimativa'],[
-    ['População-alvo (25–64)',fmt(x.pop)],
-    ['Mulheres convocadas','~'+fmt(x.conv)],
-    ['Testes DNA-HPV (adesão '+(c.ades*100).toFixed(0)+'%)',fmt(x.testes)],
-    ['HPV de alto risco +','~'+fmt(x.hpv)],
-    ['Lesões NIC2+ / cânceres evitados','~'+fmt(x.les)+' / ~'+fmt(x.casos)],
-    ['Desdobramentos na rede (citologia/colpo/biópsia/EZT)','~'+fmt(x.cito)+' / ~'+fmt(x.colp)+' / ~'+fmt(x.biop)+' / ~'+fmt(x.ezt)],
-  ],{0:{cellWidth:230,fontStyle:'bold',textColor:C_WINE}});
-  w.p('Quantidades a confirmar no SISCAN, e-SUS APS e base populacional. O seguimento (colposcopia/EZT) deve estar assegurado e pactuado em CIR/PPI antes do início.');
-  w.h1('5. Levantamento de mercado e estimativa do valor');
-  w.p('O valor deve ser estimado por pesquisa de mercado própria (IN SEGES/ME nº 65/2021 — mínimo três fontes, atualizada em até seis meses), que é o parâmetro de aceitabilidade do preço. A estratificação de custos, quando apresentada, tem caráter de demonstração de exequibilidade (memória de cálculo) e não fundamenta o preço: a eventual margem é resultado, e não parâmetro. Por não se tratar de obra de engenharia, não se aplica régua de BDI nem limite de lucro (Lei nº 14.133/2021, arts. 11 e 23).');
-  w.h1('6. Justificativa da solução e da rota jurídica');
-  w.p('Opta-se pelo DNA-HPV com autocoleta por sua maior sensibilidade (90–95% ante 55–70% da citologia), aceitação quase universal e alcance das não rastreadas. '+x.instr.base);
-  w.h1('7. Resultados pretendidos e posicionamento sobre a viabilidade');
-  ['Elevação da cobertura rumo à meta de 70%, priorizando as mulheres nunca rastreadas;',
-   'Redução do intervalo coleta–conduta e qualificação do encaminhamento à Atenção Especializada;',
-   'Seguimento longitudinal com indicadores auditáveis (Previne Brasil / 90-70-90);',
-   'Capacidade de seguimento assegurada; cadastro no SISCAN; conformidade com a LGPD.'].forEach(t=>w.li(t));
-  w.p('Diante do exposto, a contratação é tecnicamente viável, legalmente enquadrável e economicamente vantajosa frente à citologia e ao tratamento tardio, recomendando-se prosseguir com a instrução processual correspondente à rota escolhida.');
-  w.sign(x.orgao);
+/* ===== renderizador PADRÃO EDITAL (Times, preto, justificado) ===== */
+function _ed(doc){
+  const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight();
+  const ML=72, MR=57, MT=60, MB=58, CW=W-ML-MR, LH=16.8;   // margens ~ABNT em pt
+  let y=MT;
+  function ensure(h){ if(y+h>H-MB){ doc.addPage(); y=MT; } }
+  function body(){ doc.setFont('times','normal'); doc.setFontSize(12); doc.setTextColor(0,0,0); }
+  function just(L){ return (L.length>1)?{align:'justify',maxWidth:CW}:{}; }
+  const api={
+    title(lines){ doc.setTextColor(0,0,0);
+      lines.forEach(l=>{ const s=l.s||12; doc.setFont('times', l.b===false?'normal':'bold'); doc.setFontSize(s);
+        const L=doc.splitTextToSize(l.t,CW); ensure(L.length*s*1.25+6);
+        L.forEach((ln,i)=>doc.text(ln,W/2,y+s+i*s*1.25,{align:'center'})); y+=L.length*s*1.25+4; });
+      y+=6; return api; },
+    h1(t){ ensure(30); doc.setFont('times','bold'); doc.setFontSize(12); doc.setTextColor(0,0,0);
+      const L=doc.splitTextToSize(t.toUpperCase(),CW); L.forEach((ln,i)=>doc.text(ln,ML,y+12+i*15)); y+=L.length*15+9; return api; },
+    h2(t){ ensure(22); doc.setFont('times','bold'); doc.setFontSize(12);
+      const L=doc.splitTextToSize(t,CW); L.forEach((ln,i)=>doc.text(ln,ML,y+11+i*14)); y+=L.length*14+5; return api; },
+    p(t){ body(); const L=doc.splitTextToSize(t,CW); ensure(L.length*LH+6);
+      doc.text(L,ML,y+11,just(L)); y+=L.length*LH+6; return api; },
+    al(items){ body(); const al='abcdefghijklmnopqrstuvwxyz';
+      items.forEach((t,i)=>{ const L=doc.splitTextToSize(al[i]+') '+t,CW-18); ensure(L.length*LH+4);
+        doc.text(L,ML+18,y+11,(L.length>1)?{align:'justify',maxWidth:CW-18}:{}); y+=L.length*LH+4; }); return api; },
+    inc(items){ body(); items.forEach(t=>{ const L=doc.splitTextToSize(t,CW); ensure(L.length*LH+4);
+        doc.text(L,ML,y+11,just(L)); y+=L.length*LH+4; }); return api; },
+    tbl(head,body0,cw){ ensure(44); doc.autoTable({startY:y,head:[head],body:body0,margin:{left:ML,right:MR},theme:'grid',
+        styles:{font:'times',fontSize:10,textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.4,cellPadding:4,overflow:'linebreak'},
+        headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',lineColor:[0,0,0],lineWidth:0.4},
+        columnStyles:cw||{}});
+      y=doc.lastAutoTable.finalY+10; return api; },
+    gap(h){ y+=(h||8); return api; },
+    sign(blocks){ ensure(70+blocks.length*54); y+=26;
+      doc.setFont('times','normal'); doc.setFontSize(11); doc.setTextColor(0,0,0);
+      blocks.forEach(b=>{ doc.text('______________________________________',W/2,y,{align:'center'});
+        b.forEach((s,i)=>doc.text(s,W/2,y+13+i*12,{align:'center'})); y+=52; });
+      doc.text('__________________________, ______ de __________________ de 2026.',W/2,y+8,{align:'center'}); return api; },
+    done(ref){ const n=doc.internal.getNumberOfPages();
+      for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont('times','normal'); doc.setFontSize(9); doc.setTextColor(0,0,0);
+        doc.setDrawColor(0,0,0); doc.setLineWidth(0.3); doc.line(ML,H-40,W-MR,H-40);
+        doc.text(ref,ML,H-28); doc.text('Página '+i+' de '+n,W-MR,H-28,{align:'right'}); }
+      return doc; }
   };
-  return _renderTec(doc,'ETP — Rastreio PinkPapa',x.alvo,meta,sumario,body,append);
+  return api;
 }
-function genPlanoTrabalho(doc,c,append){
-  const x=_ctx(c);
-  const kitLab=x.testes*200, log=x.testes*20, plat=30000, cap=30000, coord=40000;
-  const meta={tipo:'PLANO DE TRABALHO (MROSC)', sub:'Parceria — Lei nº 13.019/2014 — rastreio do colo do útero por DNA-HPV — '+x.alvo,
-    linhas:['Administração parceira: '+x.orgao, 'Instrumento: Termo de Colaboração (art. 2º, VII)  ·  Fonte: '+x.fonte,
-      'OSC executora: [ INSTITUTO — razão social / CNPJ ] em parceria com a PinkLab']};
-  const sumario=['1. Identificação das partes','2. Objeto','3. Justificativa','4. Metas e cronograma','5. Indicadores',
-    '6. Receitas e despesas','7. Desembolso e prestação de contas'];
-  const body=(w)=>{
-  w.h1('1. Identificação das partes');
+const _DISC='Documento em modelo de trabalho. Os campos entre colchetes devem ser preenchidos pelo órgão com os dados locais. As estimativas de quantidade devem ser confirmadas pelo SISCAN, pelo e-SUS APS e pela base populacional; as de valor, por pesquisa de mercado própria, nos termos da Instrução Normativa SEGES/ME nº 65/2021. Trata-se de sugestão técnica da G3 Health Service / PinkPapa, que não substitui o juízo da área técnica, da assessoria jurídica e do controle interno.';
+
+function genETP(doc,c){
+  const x=_ctx(c), w=_ed(doc);
+  w.title([
+    {t:'[ BRASÃO / TIMBRE DO MUNICÍPIO ]',b:false,s:10},
+    {t:x.orgao.toUpperCase(),s:12},
+    {t:'ESTUDO TÉCNICO PRELIMINAR — ETP',s:13},
+    {t:'CONTRATAÇÃO DE SERVIÇOS DE RASTREAMENTO ORGANIZADO DO CÂNCER DO COLO DO ÚTERO POR TESTE MOLECULAR DNA-HPV COM AUTOCOLETA',s:11},
+  ]);
+  w.tbl(['Campo','Conteúdo'],[
+    ['Processo administrativo nº','[ ___ / ______ ]'],
+    ['Unidade demandante',x.orgao],
+    ['Base legal','Art. 18, § 1º, da Lei nº 14.133/2021 (aplicação subsidiária) e Lei nº 13.019/2014 (MROSC)'],
+    ['Rota jurídica pretendida',x.instr.label],
+    ['Modelo de execução','Ação concentrada e itinerante (mutirão) integrada à Atenção Primária, com retaguarda laboratorial e navegação de pacientes'],
+    ['Executora proposta','[ INSTITUTO — razão social / CNPJ ] (OSC), em parceria técnico-laboratorial com a PinkLab'],
+    ['Apoio técnico','G3 Health Service Ltda. — CNPJ 31.652.744/0001-14'],
+    ['Data','[ ___/___/______ ]'],
+  ],{0:{cellWidth:150,fontStyle:'bold'}});
+  w.p(_DISC);
+
+  w.h1('1. Descrição da necessidade da contratação');
+  w.p('1.1. O câncer do colo do útero é neoplasia de causa conhecida, evolução lenta e lesão precursora tratável e, ainda assim, permanece entre as principais causas de morte por câncer na população feminina brasileira, concentrando-se justamente nas mulheres que o rastreamento oportunístico não alcança. É doença quase integralmente evitável por rastreamento de qualidade associado ao tratamento tempestivo das lesões precursoras (INCA; OMS).');
+  w.p('1.2. O modelo praticado na rede é predominantemente oportunístico, dependente da procura espontânea da usuária. A citologia convencional exige estrutura física específica (mesa ginecológica, espéculo e foco de luz) e profissional executor, impõe exposição corporal que afasta parcela relevante das mulheres e apresenta elevado absenteísmo e perda de seguimento entre a coleta e a conduta. Em '+x.alvo+', a cobertura estimada do rastreamento é da ordem de '+(c.covA*100).toFixed(0)+'%, inferior à meta de 70% (pilar 70 das metas 90-70-90 da Organização Mundial da Saúde).');
+  w.p('1.3. Em 2024, a Comissão Nacional de Incorporação de Tecnologias no SUS (CONITEC) recomendou a adoção do teste molecular de detecção do DNA do Papilomavírus Humano (DNA-HPV) como exame primário de rastreamento, em substituição à citologia convencional, no âmbito de modelo de rastreamento organizado. A incorporação foi formalizada pela Portaria SECTICS/MS nº 3, de 7 de março de 2024, e o procedimento consta da Tabela SIGTAP sob o código 0202100251 (exame molecular de detecção de HPV), de média complexidade, com faixa etária de 25 a 64 anos e registro por BPA-I.');
+  w.p('1.4. A autocoleta vaginal apresenta aceitação próxima de 100% e alcança mulheres que nunca se rastrearam, constituindo vetor essencial para elevar a cobertura. A necessidade da contratação decorre, assim, de quatro fatores convergentes: epidemiológico (persistência de mortalidade evitável); assistencial (baixa cobertura, absenteísmo e fragmentação do seguimento no modelo vigente); normativo (adequação à estratégia nacional de rastreamento organizado com teste molecular DNA-HPV); e de equidade (concentração da não-cobertura nas mulheres de maior vulnerabilidade social e territorial, que o modelo de espera passiva não alcança).');
+
+  w.h1('2. Previsão no plano de contratações e alinhamento institucional');
+  w.p('2.1. A ação [ está / não está ] prevista no Plano Municipal de Saúde e na Programação Anual de Saúde vigentes, aderindo às diretrizes de atenção integral à saúde da mulher e de detecção precoce de neoplasias, bem como aos indicadores do Previne Brasil relativos à cobertura de citopatológico.');
+  w.p('2.2. Recomenda-se verificar a compatibilidade com o Plano Plurianual (PPA), a Lei de Diretrizes Orçamentárias (LDO) e a Lei Orçamentária Anual (LOA) vigentes, registrando-se expressamente a fonte de financiamento pretendida — recursos do bloco de Manutenção das Ações e Serviços Públicos de Saúde (MAC), recursos próprios, emendas parlamentares ou transferências fundo a fundo específicas.');
+
+  w.h1('3. Requisitos da contratação');
+  w.h2('3.1. Requisitos de natureza técnica e sanitária');
+  w.al([
+    'Kit de autocoleta vaginal composto por coletor, tubo com meio de transporte e manual ilustrado de instruções em português, com registro ativo na ANVISA e prazo de validade não inferior a 12 (doze) meses na data da entrega;',
+    'Exame de biologia molecular para detecção e genotipagem do DNA-HPV, contemplando no mínimo 28 (vinte e oito) genótipos, com identificação individualizada, no mínimo, dos tipos 16 e 18;',
+    'Laboratório analítico com inscrição regular no SCNES/CNES, licença sanitária vigente para diagnóstico molecular e responsável técnico habilitado;',
+    'Controle interno de amplificação por amostra e participação em programa de controle de qualidade externo, quando disponível;',
+    'Liberação do laudo em até 48 (quarenta e oito) horas contadas do recebimento da amostra no laboratório;',
+    'Logística própria ou contratada de recolhimento e transporte de material biológico, com cadeia de custódia e conservação adequada;',
+    'Plataforma digital (web e móvel) para cadastro, rastreabilidade, laudo digital, alerta automático de resultado alterado e seguimento longitudinal por até 5 (cinco) anos;',
+    'Conformidade integral à Lei nº 13.709/2018 (LGPD), com criptografia, controle de acesso por perfil, registro de logs e encarregado de dados indicado;',
+    'Plano de Gerenciamento de Resíduos de Serviços de Saúde (PGRSS), nos termos da RDC ANVISA nº 222/2018.',
+  ]);
+  w.h2('3.2. Requisitos de natureza assistencial');
+  w.al([
+    'Observância das diretrizes do Ministério da Saúde e do INCA para o rastreamento do câncer do colo do útero;',
+    'Atendimento gratuito, humanizado, acessível e sem qualquer forma de discriminação, vedada cobrança direta ou indireta à usuária;',
+    'Submissão integral à regulação do acesso exercida pela Secretaria Municipal de Saúde;',
+    'Capacitação inicial e continuada das equipes da Atenção Primária quanto ao manuseio dos kits, à orientação da usuária e ao uso da plataforma;',
+    'Navegação de pacientes: nenhuma mulher incluída na ação poderá ser liberada sem registro do canal e da data previstos para a devolutiva do resultado.',
+  ]);
+  w.h2('3.3. Natureza do serviço');
+  w.p('3.3.1. A operação de campo (autocoleta realizada pela própria usuária, com apoio das equipes da Atenção Primária — Agentes Comunitários de Saúde e enfermagem) é de natureza comum, não constitui ato médico nem exige profissional médico especialista. Já o processamento laboratorial (biologia molecular — reação em cadeia da polimerase com genotipagem do HPV) é atividade técnica especializada de laboratório, executada sob responsabilidade técnica própria.');
+  w.p('3.3.2. Os atos médicos especializados (colposcopia, biópsia, exérese da zona de transformação e tratamento) não integram este objeto e permanecem na rede pública, observada a segregação de funções.');
+  w.h2('3.4. Vedação quanto a tecnologias não incorporadas');
+  w.p('3.4.1. Nos termos do art. 19-T da Lei nº 8.080/1990, é vedado, em todas as esferas de gestão do SUS, o pagamento, o ressarcimento ou o reembolso de medicamento, produto ou procedimento clínico ou cirúrgico experimental, de uso não autorizado pela ANVISA ou não incorporado por ato do Ministério da Saúde. A solução pretendida restringe-se a tecnologia já incorporada ao SUS (SIGTAP 0202100251).');
+
+  w.h1('4. Estimativa das quantidades e dimensionamento do primeiro ciclo');
+  w.p('4.1. População-alvo de '+fmt(x.pop)+' mulheres de 25 a 64 anos. Dimensionamento do primeiro ciclo, considerando a meta de cobertura e a adesão estimada:');
+  w.tbl(['Parâmetro','Estimativa'],[
+    ['População-alvo (25 a 64 anos)',fmt(x.pop)],
+    ['Mulheres convocadas (busca ativa)','~'+fmt(x.conv)],
+    ['Testes DNA-HPV realizados (adesão '+(c.ades*100).toFixed(0)+'%)',fmt(x.testes)],
+    ['Resultados HPV de alto risco positivos','~'+fmt(x.hpv)],
+    ['Lesões NIC2+ esperadas','~'+fmt(x.les)],
+    ['Cânceres evitados (estimativa)','~'+fmt(x.casos)],
+  ],{0:{cellWidth:300}});
+  w.p('4.2. Desdobramentos assistenciais esperados na rede (não integram o objeto; Manual DNA-HPV INCA/MS):');
+  w.tbl(['Procedimento','Volume estimado','Financiamento'],[
+    ['Citologia reflexa','~'+fmt(x.cito),'MAC / SIA'],
+    ['Colposcopia','~'+fmt(x.colp),'MAC / FAEC / OCI'],
+    ['Biópsia','~'+fmt(x.biop),'MAC / FAEC'],
+    ['Exérese da zona de transformação (EZT)','~'+fmt(x.ezt),'MAC / FAEC / OCI'],
+  ],{0:{cellWidth:230}});
+  w.p('4.3. As quantidades deverão ser confirmadas com os dados do SISCAN, do e-SUS APS e da base populacional municipal antes do início. O seguimento (colposcopia e EZT) deverá estar assegurado e pactuado em CIR/PPI previamente à ação.');
+
+  w.h1('5. Levantamento das soluções de mercado');
+  w.p('5.1. A solução pretendida — kit de autocoleta, exame molecular DNA-HPV com genotipagem, logística, laudo e plataforma de seguimento — é ofertada por laboratórios e integradores no mercado nacional, em arranjo de solução integrada. Comparativamente à citologia convencional, o teste molecular DNA-HPV apresenta sensibilidade de 90 a 95% para lesões de alto grau (ante 55 a 70% da citologia), permite intervalo de rastreamento de cinco anos após resultado negativo e viabiliza a autocoleta, com redução de custo projetada no longo prazo (CONITEC).');
+  w.p('5.2. Justifica-se, assim, a escolha da solução integrada por DNA-HPV com autocoleta como a de melhor relação entre benefício assistencial, alcance de equidade e custo, atendida a necessidade descrita no item 1.');
+
+  w.h1('6. Estimativa do valor da contratação');
+  w.p('6.1. O valor deverá ser estimado por pesquisa de mercado própria (Instrução Normativa SEGES/ME nº 65/2021 — mínimo de três fontes, atualizada em até seis meses), que constitui o parâmetro de aceitabilidade do preço.');
+  w.p('6.2. A estratificação de custos da operação, quando apresentada, tem caráter de demonstração de exequibilidade (memória de cálculo) e não constitui o fundamento do preço: a eventual margem é resultado, e não parâmetro, da contratação. Por não se tratar de obra de engenharia, não se aplica régua de BDI nem limite de lucro; o único parâmetro de aceitabilidade é a compatibilidade com o preço de mercado (Lei nº 14.133/2021, arts. 11 e 23).');
+  w.p('6.3. Para ciclo isolado de '+fmt(x.testes)+' testes, recomenda-se ancorar o valor unitário em pesquisa de mercado e, se necessário, adotar patamar conservador, prevendo-se a revisão do valor por volume em ciclos recorrentes.');
+
+  w.h1('7. Justificativa do não-parcelamento');
+  w.p('7.1. O objeto constitui solução integrada e indissociável (coleta, exame molecular, logística, laudo e seguimento), cujo fracionamento comprometeria a cadeia de custódia, a responsabilidade técnica do laudo e a rastreabilidade do seguimento, razão pela qual se justifica a contratação em objeto único, sem prejuízo da segregação de funções em relação aos atos especializados mantidos na rede.');
+
+  w.h1('8. Contratações correlatas e interdependentes');
+  w.p('8.1. A ação pressupõe a retaguarda assistencial da rede para o seguimento das mulheres com resultado alterado (colposcopia, biópsia e EZT), cuja capacidade deverá estar pactuada em CIR/PPI antes do início. Tais procedimentos não integram o objeto desta parceria e são financiados por MAC/FAEC/OCI.');
+
+  w.h1('9. Base legal');
+  w.al([
+    'Lei nº 13.019/2014 (MROSC) — regime jurídico das parcerias com organizações da sociedade civil, instrumentalizadas por Termo de Colaboração, precedido de chamamento público (art. 24) ou de sua dispensa/inexigibilidade justificada (arts. 30 e 31);',
+    'Lei nº 14.133/2021 — aplicação subsidiária, especialmente quanto ao planejamento (art. 18) e à pesquisa de preços (art. 23);',
+    'Portaria SECTICS/MS nº 3/2024 — incorporação do teste DNA-HPV ao SUS; Tabela SIGTAP, código 0202100251;',
+    'Lei nº 8.080/1990, art. 19-T — vedação a tecnologias não incorporadas;',
+    'Lei nº 13.709/2018 (LGPD) — tratamento de dado pessoal sensível de saúde;',
+    'Manual de apoio à implementação do teste DNA-HPV (INCA/MS) e PCDT — dimensionamento e linha de cuidado.',
+  ]);
+
+  w.h1('10. Demonstração dos resultados pretendidos');
+  w.al([
+    'Elevação da cobertura do rastreamento rumo à meta de 70%, com priorização das mulheres nunca rastreadas;',
+    'Redução do intervalo entre a coleta e a conduta e qualificação do encaminhamento à Atenção Especializada;',
+    'Seguimento longitudinal nominal da população-alvo, com indicadores físico-financeiros auditáveis (Previne Brasil e metas 90-70-90);',
+    'Fortalecimento da equidade no acesso ao rastreamento.',
+  ]);
+
+  w.h1('11. Providências prévias ao início');
+  w.al([
+    'Garantia da capacidade de seguimento (colposcopia e EZT) pactuada em CIR/PPI;',
+    'Cadastro das unidades e dos profissionais no CNES e habilitação de acesso ao SISCAN (siscan.saude.gov.br/login.jsf);',
+    'Adequação à LGPD, com definição do encarregado de dados e dos controles de segurança;',
+    'Capacitação das equipes da Atenção Primária quanto à orientação da autocoleta e ao registro do procedimento.',
+  ]);
+
+  w.h1('12. Impactos ambientais');
+  w.p('12.1. O manejo dos resíduos observará o Plano de Gerenciamento de Resíduos de Serviços de Saúde (PGRSS), nos termos da RDC ANVISA nº 222/2018, com segregação, acondicionamento e destinação adequados do material biológico e dos insumos.');
+
+  w.h1('13. Posicionamento conclusivo sobre a viabilidade');
+  w.p('13.1. Diante do exposto, a contratação é tecnicamente viável, legalmente enquadrável na Lei nº 13.019/2014 (parceria com organização da sociedade civil) e economicamente vantajosa frente à citologia convencional e ao tratamento tardio. Recomenda-se prosseguir com a elaboração do Plano de Trabalho, do instrumento de parceria (Termo de Colaboração) e da pesquisa de preços, assegurada a capacidade de seguimento antes do início da ação.');
+
+  w.sign([
+    ['[ NOME / MATRÍCULA / CARGO ]','Responsável técnico pela elaboração'],
+    ['Autoridade competente — '+x.orgao,''],
+  ]);
+  return w.done('ETP — Rastreamento do colo do útero (DNA-HPV autocoleta) — '+x.alvo);
+}
+
+function genPlanoTrabalho(doc,c){
+  const x=_ctx(c), w=_ed(doc);
+  const kitLab=x.testes*200, log=x.testes*20, plat=30000, cap=30000, coord=40000, sub=kitLab+log+plat+cap+coord;
+  w.title([
+    {t:'[ BRASÃO / TIMBRE DO MUNICÍPIO ]',b:false,s:10},
+    {t:x.orgao.toUpperCase(),s:12},
+    {t:'PLANO DE TRABALHO',s:13},
+    {t:'PARCERIA — LEI FEDERAL Nº 13.019/2014 (MROSC) — RASTREAMENTO DO CÂNCER DO COLO DO ÚTERO POR DNA-HPV COM AUTOCOLETA',s:11},
+  ]);
+  w.p(_DISC);
+  w.h1('1. Identificação das partes e do instrumento');
   w.tbl(['Campo','Conteúdo'],[
     ['Administração Pública parceira',x.orgao],
-    ['OSC executora','[ INSTITUTO — razão social / CNPJ / endereço ]'],
-    ['Parceiro técnico-laboratorial','PinkLab — etapa de biologia molecular'],
+    ['Organização da Sociedade Civil (OSC)','[ INSTITUTO — razão social / CNPJ / endereço ]'],
+    ['Parceiro técnico-laboratorial','PinkLab — responsável pela etapa de biologia molecular'],
     ['Apoio técnico','G3 Health Service Ltda. — CNPJ 31.652.744/0001-14'],
+    ['Representante legal da OSC','[ nome / CPF / cargo ]'],
     ['Instrumento','Termo de Colaboração (art. 2º, VII, da Lei nº 13.019/2014)'],
     ['Vigência prevista','[ 12 meses ] a partir da assinatura'],
   ],{0:{cellWidth:170,fontStyle:'bold'}});
   w.h1('2. Objeto da parceria');
-  w.p('Execução de ação concentrada e itinerante (mutirão) de rastreamento do câncer do colo do útero por teste molecular DNA-HPV com autocoleta, integrada à Atenção Primária, com busca ativa nominal, retaguarda laboratorial, laudo digital e seguimento das usuárias, sem cobrança direta ou indireta.');
-  w.h1('3. Descrição da realidade e nexo com a parceria');
-  w.p('A cobertura de rastreio em '+x.alvo+' situa-se na ordem de '+(c.covA*100).toFixed(0)+'%, com concentração da não-cobertura em mulheres de maior vulnerabilidade. A parceria enfrenta essa realidade por mobilização comunitária, autocoleta e navegação de pacientes, em interesse público recíproco.');
-  w.h1('4. Metas, etapas e cronograma de execução');
+  w.p('2.1. Execução, em regime de mútua cooperação, de ação concentrada e itinerante (mutirão) de rastreamento organizado do câncer do colo do útero por teste molecular DNA-HPV com autocoleta vaginal, integrada à Atenção Primária do Município, com busca ativa nominal, retaguarda laboratorial, laudo digital e seguimento longitudinal das usuárias, sem cobrança direta ou indireta.');
+  w.h1('3. Descrição da realidade objeto da parceria e nexo de causalidade (art. 22, I)');
+  w.p('3.1. A cobertura do rastreamento em '+x.alvo+' situa-se na ordem de '+(c.covA*100).toFixed(0)+'%, com concentração da não-cobertura em mulheres de maior vulnerabilidade social e territorial. O modelo oportunístico vigente não alcança as mulheres que nunca se rastrearam, perpetuando mortalidade evitável.');
+  w.p('3.2. A parceria enfrenta essa realidade por meio de mobilização comunitária, autocoleta e navegação de pacientes, em interesse público recíproco, elevando a cobertura rumo à meta de 70% e qualificando o seguimento das lesões precursoras. O nexo de causalidade entre a ação proposta e o resultado pretendido assenta-se na maior sensibilidade do teste molecular e na aceitação quase universal da autocoleta.');
+  w.h1('4. Descrição de metas, etapas, cronograma e prazos (art. 22, II)');
   w.tbl(['Fase','Atividades','Prazo','Responsável'],[
-    ['1. Planejamento','Pactuação, unidades de coleta (UBS/UPA), meta por unidade e cadastro no SISCAN','Mês 1','OSC + Secretaria'],
-    ['2. Capacitação','Treinamento das equipes da APS (ACS/enfermagem) p/ autocoleta e SIGTAP 0202100251','Mês 1–2','OSC / PinkLab'],
-    ['3. Convocação','Busca ativa das mulheres de 25–64 anos, priorizando as nunca rastreadas','Mês 2+','Secretaria + ACS'],
-    ['4. Autocoleta','Entrega/retirada do coletor; autocoleta sem espéculo e sem mesa ginecológica','Contínuo','Unidades de saúde'],
-    ['5. Análise laboratorial','PCR com genotipagem e laudo em até 48h','Contínuo','PinkLab'],
-    ['6. Encaminhamento','HPV+ de alto risco à colposcopia/tratamento na rede','Contínuo','Secretaria'],
-    ['7. Monitoramento','Plataforma/IA, painel de cobertura e indicadores (Previne / 90-70-90)','Até 5 anos','OSC + PinkLab'],
-  ],{0:{cellWidth:95,fontStyle:'bold',textColor:C_WINE},2:{cellWidth:70}});
-  w.h1('5. Parâmetros e indicadores de aferição');
-  ['Nº de mulheres testadas / meta do ciclo ('+fmt(x.testes)+');','Cobertura alcançada na população-alvo (rumo a 70%);',
-   'Tempo médio coleta–laudo (meta ≤ 48h);','% de HPV+ com seguimento efetivado;','% de mulheres nunca rastreadas alcançadas.'].forEach(t=>w.li(t));
-  w.h1('6. Previsão de receitas e despesas (memória de cálculo)');
-  w.p('Valores de demonstração de exequibilidade, a confirmar por pesquisa de mercado (IN 65/2021). Referência: '+fmt(x.testes)+' testes.');
-  w.tbl(['Componente','Base','Valor'],[
+    ['1. Planejamento','Pactuação com a Secretaria, definição das unidades de coleta (UBS/UPA/centros comunitários), meta por unidade e cadastro no SISCAN','Mês 1','OSC + Secretaria'],
+    ['2. Capacitação','Treinamento das equipes da Atenção Primária (ACS/enfermagem) para orientar a autocoleta e registrar o procedimento SIGTAP 0202100251','Mês 1 a 2','OSC / PinkLab'],
+    ['3. Convocação','Busca ativa das mulheres de 25 a 64 anos, priorizando as que nunca se rastrearam; campanha e agendamento','Mês 2 em diante','Secretaria + ACS'],
+    ['4. Autocoleta','Entrega e retirada do coletor; a mulher realiza a autocoleta sem espéculo e sem mesa ginecológica','Contínuo','Unidades de saúde'],
+    ['5. Análise laboratorial','Processamento por PCR com genotipagem e emissão de laudo em até 48 horas','Contínuo','PinkLab'],
+    ['6. Encaminhamento','Mulheres HPV+ de alto risco encaminhadas à colposcopia/tratamento na rede','Contínuo','Secretaria'],
+    ['7. Monitoramento','Acompanhamento por plataforma/IA, painel de cobertura e indicadores (Previne Brasil / 90-70-90)','Até 5 anos','OSC + PinkLab'],
+  ],{0:{cellWidth:85,fontStyle:'bold'},2:{cellWidth:66}});
+  w.h1('5. Forma de execução das atividades');
+  w.al([
+    'A OSC coordena a mobilização comunitária, a logística dos kits e a navegação das pacientes, com apoio das equipes da Atenção Primária;',
+    'A PinkLab executa a etapa de biologia molecular, sob responsabilidade técnica, com laudo em até 48 horas e cadeia de custódia;',
+    'A Administração Pública exerce a regulação do acesso e assegura o seguimento (colposcopia/EZT) na rede;',
+    'Toda a operação é registrada em plataforma digital, em conformidade com a LGPD, com rastreabilidade e alerta de resultado alterado.',
+  ]);
+  w.h1('6. Parâmetros e indicadores de aferição do cumprimento (art. 22, III)');
+  w.al([
+    'Número de mulheres testadas em relação à meta do ciclo ('+fmt(x.testes)+' testes);',
+    'Percentual de cobertura alcançado na população-alvo (rumo a 70%);',
+    'Tempo médio entre coleta e laudo (meta: até 48 horas);',
+    'Percentual de resultados HPV positivos com seguimento efetivado (colposcopia/conduta registrada);',
+    'Percentual de mulheres nunca rastreadas alcançadas pela ação.',
+  ]);
+  w.h1('7. Previsão de receitas e de despesas — memória de cálculo');
+  w.p('7.1. Os valores a seguir têm caráter de demonstração de exequibilidade e devem ser confirmados por pesquisa de mercado (IN SEGES/ME nº 65/2021). Referência do ciclo: '+fmt(x.testes)+' testes.');
+  w.tbl(['Componente','Base','Valor (R$)'],[
     ['Exame molecular + kit (laboratório)',fmt(x.testes)+' × R$ 200',fmtMoney(kitLab)],
-    ['Logística e laudo 48h',fmt(x.testes)+' × R$ 20',fmtMoney(log)],
+    ['Logística e laudo em 48h',fmt(x.testes)+' × R$ 20',fmtMoney(log)],
     ['Plataforma digital + monitoramento','alocação do ciclo',fmtMoney(plat)],
-    ['Capacitação e suporte','1 evento',fmtMoney(cap)],
-    ['Coordenação e gestão','equipe, ~1 mês',fmtMoney(coord)],
-    ['Tributos sobre repasse','regime da OSC','a validar'],
+    ['Capacitação e suporte às equipes','1 evento',fmtMoney(cap)],
+    ['Coordenação e gestão da ação','equipe, ~1 mês',fmtMoney(coord)],
+    ['Subtotal','—',fmtMoney(sub)],
+    ['Tributos sobre repasse','regime da OSC, a validar','a validar'],
     ['Valor total da parceria','—','[ a confirmar por pesquisa de mercado ]'],
-  ],{0:{cellWidth:200}},[2]);
-  w.h1('7. Cronograma de desembolso e prestação de contas');
-  w.p('Repasses em [ parcela única / parcelas ] vinculados ao cumprimento de metas, em conta bancária específica com movimentação eletrônica (arts. 51 e 53). A prestação de contas observará os arts. 63 a 72 da Lei nº 13.019/2014, com relatório de execução do objeto e metas físico-financeiras auditáveis.');
-  w.sign(x.orgao);
-  };
-  return _renderTec(doc,'Plano de Trabalho (MROSC) — PinkPapa',x.alvo,meta,sumario,body,append);
+  ],{0:{cellWidth:210}});
+  w.h1('8. Cronograma de desembolso');
+  w.p('8.1. Os repasses observarão [ parcela única / parcelas ] vinculadas ao cumprimento das metas e à prestação de contas, creditados em conta bancária específica da parceria, movimentada eletronicamente (arts. 51 e 53 da Lei nº 13.019/2014). Detalhar: [ parcelas, datas e condicionantes ].');
+  w.h1('9. Contrapartida');
+  w.p('9.1. [ Quando exigida ] A contrapartida da OSC, se houver, será definida em bens e/ou serviços economicamente mensuráveis, vedada a exigência de contrapartida financeira quando não prevista no edital, nos termos do art. 35, § 1º, da Lei nº 13.019/2014.');
+  w.h1('10. Prestação de contas');
+  w.p('10.1. A OSC prestará contas na forma dos arts. 63 a 72 da Lei nº 13.019/2014, com relatório de execução do objeto, relatório de execução financeira quando exigido e comprovação das metas físico-financeiras auditáveis, submetidos ao gestor da parceria e à comissão de monitoramento e avaliação, priorizado o controle de resultados.');
+  w.sign([
+    ['[ INSTITUTO ] — Organização da Sociedade Civil','Representante legal'],
+    [x.orgao,'Gestor da parceria'],
+  ]);
+  return w.done('Plano de Trabalho (MROSC) — Colo do útero DNA-HPV — '+x.alvo);
 }
-function genTermoColaboracao(doc,c,append){
-  const x=_ctx(c);
-  const meta={tipo:'MINUTA DE TERMO DE COLABORAÇÃO', sub:'Lei nº 13.019/2014 (MROSC) — rastreio do colo do útero por DNA-HPV — '+x.alvo,
-    linhas:['Administração: '+x.orgao, 'OSC: [ INSTITUTO — razão social / CNPJ ]  ·  Parceiro: PinkLab',
-      'Minuta em modelo — campos entre colchetes a preencher e ratificar pela área jurídica']};
-  const sumario=['Objeto','Obrigações das partes','Valor e repasses','Conta e prestação de contas','Proteção de dados','Vigência, sanções e foro'];
-  const body=(w)=>{
-  w.p('Termo de Colaboração que entre si celebram o MUNICÍPIO, por meio da '+x.orgao+', inscrita no CNPJ nº [ ___ ], doravante ADMINISTRAÇÃO PÚBLICA, e [ INSTITUTO — razão social ], CNPJ nº [ ___ ], doravante OSC, para a execução do objeto adiante descrito, observada a Lei nº 13.019/2014.');
-  w.h1('Cláusula Primeira — Do objeto');
-  w.p('Execução, em mútua cooperação, de ação concentrada e itinerante de rastreamento do câncer do colo do útero por teste molecular DNA-HPV com autocoleta, conforme o Plano de Trabalho que integra este instrumento independentemente de transcrição.');
-  w.h1('Cláusula Segunda — Das obrigações da Administração Pública');
-  w.p('I — exercer a regulação do acesso e integrar a ação à Atenção Primária; II — disponibilizar as unidades de coleta e o apoio das equipes; III — garantir a capacidade de seguimento (colposcopia/EZT) na rede; IV — repassar os recursos conforme o cronograma; V — monitorar e avaliar a parceria.');
-  w.h1('Cláusula Terceira — Das obrigações da OSC');
-  w.p('I — executar o objeto conforme o MS/INCA e a natureza do serviço do Plano de Trabalho; II — assegurar, por si e pela PinkLab, o exame molecular com responsabilidade técnica, laudo em até 48h e cadeia de custódia; III — manter plataforma de rastreabilidade conforme a LGPD; IV — não cobrar das usuárias; V — manter conta específica; VI — prestar contas (arts. 63 a 72).');
-  w.h1('Cláusula Quarta — Do valor e dos repasses');
-  w.p('O valor global é de R$ [ ___ ] (referência de exequibilidade: '+fmtMoney(x.receita)+' para '+fmt(x.testes)+' testes), estimado por pesquisa de mercado (IN 65/2021), repassado conforme o cronograma de desembolso, vedada destinação diversa.');
-  w.h1('Cláusula Quinta — Da conta específica e prestação de contas');
-  w.p('Os recursos serão geridos em conta bancária específica, com aplicação financeira na forma do art. 51 enquanto não empregados; a prestação de contas priorizará o controle de resultados (arts. 63 a 72).');
-  w.h1('Cláusula Sexta — Da proteção de dados (LGPD)');
-  w.p('As partes observarão a Lei nº 13.709/2018 no tratamento de dados pessoais sensíveis de saúde, com base legal, finalidade específica, segurança da informação e encarregado indicado.');
-  w.h1('Cláusula Sétima — Da vigência, das sanções e do foro');
-  w.p('Vigência de [ 12 meses ] da assinatura, prorrogável (art. 55); o descumprimento sujeita a OSC às sanções dos arts. 73 e 73-A, assegurado o contraditório; fica eleito o foro da Comarca de '+x.alvo+'. E, por estarem de acordo, firmam em duas vias de igual teor.');
-  w.sign(x.orgao);
-  };
-  return _renderTec(doc,'Minuta de Termo de Colaboração (MROSC) — PinkPapa',x.alvo,meta,sumario,body,append);
+
+function genTermoColaboracao(doc,c){
+  const x=_ctx(c), w=_ed(doc);
+  w.title([
+    {t:'[ BRASÃO / TIMBRE DO MUNICÍPIO ]',b:false,s:10},
+    {t:x.orgao.toUpperCase(),s:12},
+    {t:'TERMO DE COLABORAÇÃO Nº [ ___ / ______ ]',s:13},
+    {t:'LEI FEDERAL Nº 13.019/2014 (MROSC) — RASTREAMENTO DO CÂNCER DO COLO DO ÚTERO POR DNA-HPV COM AUTOCOLETA',s:11},
+  ]);
+  w.p('Termo de Colaboração que entre si celebram o MUNICÍPIO, por meio da '+x.orgao+', inscrita no CNPJ nº [ ___ ], neste ato representada por [ cargo / nome ], doravante denominada ADMINISTRAÇÃO PÚBLICA, e [ INSTITUTO — razão social ], inscrita no CNPJ nº [ ___ ], com sede em [ ___ ], neste ato representada por [ nome / cargo ], doravante denominada OSC, mediante as cláusulas e condições seguintes, observada a Lei nº 13.019/2014 e, no que couber, a legislação municipal de regência.');
+  const cl=(n,t,ps)=>{ w.h1('Cláusula '+n+' — '+t); ps.forEach(p=>w.p(p)); };
+  cl('Primeira','Do objeto',[
+    'Constitui objeto deste Termo a execução, em regime de mútua cooperação, de ação concentrada e itinerante de rastreamento do câncer do colo do útero por teste molecular DNA-HPV com autocoleta, conforme o Plano de Trabalho que o integra independentemente de transcrição.']);
+  cl('Segunda','Do Plano de Trabalho',[
+    'O Plano de Trabalho, aprovado pela Administração Pública, é parte integrante e indissociável deste Termo, e dele constam as metas, as etapas, o cronograma de execução e de desembolso, os indicadores e a memória de cálculo. Alterações do Plano observarão o art. 57 da Lei nº 13.019/2014.']);
+  cl('Terceira','Das obrigações da Administração Pública',[
+    'I — exercer a regulação do acesso e integrar a ação à Atenção Primária; II — disponibilizar as unidades de coleta e o apoio das equipes; III — assegurar a capacidade de seguimento (colposcopia e EZT) na rede; IV — repassar os recursos conforme o cronograma de desembolso; V — designar o gestor da parceria e a comissão de monitoramento e avaliação; VI — analisar e manifestar-se sobre a prestação de contas.']);
+  cl('Quarta','Das obrigações da OSC',[
+    'I — executar o objeto com observância das diretrizes do Ministério da Saúde e do INCA e da natureza do serviço definida no Plano de Trabalho; II — assegurar, por si e por seu parceiro técnico-laboratorial (PinkLab), o exame molecular com responsabilidade técnica, laudo em até 48 horas e cadeia de custódia; III — manter plataforma de rastreabilidade e seguimento em conformidade com a LGPD; IV — não cobrar, direta ou indiretamente, das usuárias; V — manter conta bancária específica e movimentação eletrônica dos recursos; VI — prestar contas na forma dos arts. 63 a 72; VII — manter a regularidade jurídica, fiscal e trabalhista durante toda a vigência.']);
+  cl('Quinta','Do valor e dos repasses',[
+    'O valor global da parceria é de R$ [ ___ ] (referência de exequibilidade: '+fmtMoney(x.receita)+' para '+fmt(x.testes)+' testes), estimado por pesquisa de mercado (IN SEGES/ME nº 65/2021), repassado conforme o cronograma de desembolso do Plano de Trabalho, vedada a destinação a finalidade diversa da pactuada.']);
+  cl('Sexta','Da conta bancária específica e da aplicação financeira',[
+    'Os recursos serão depositados e geridos em conta bancária específica da parceria e, enquanto não empregados, aplicados em caderneta de poupança ou em fundo de aplicação financeira de curto prazo, nos termos do art. 51 da Lei nº 13.019/2014, revertendo os rendimentos ao objeto.']);
+  cl('Sétima','Da vigência e das alterações',[
+    'A vigência é de [ 12 (doze) meses ], contados da assinatura, prorrogável nos termos do art. 55 da Lei nº 13.019/2014. As alterações far-se-ão por termo aditivo, mediante proposta fundamentada e prévia manifestação técnica e jurídica.']);
+  cl('Oitava','Da contrapartida',[
+    '[ Quando exigida ] A contrapartida da OSC será prestada na forma do Plano de Trabalho, observado o art. 35, § 1º, da Lei nº 13.019/2014.']);
+  cl('Nona','Do monitoramento, da avaliação e do gestor da parceria',[
+    'A execução será acompanhada pelo gestor da parceria e pela comissão de monitoramento e avaliação, com base nos indicadores do Plano de Trabalho, podendo haver visita in loco e relatório técnico de monitoramento, nos termos dos arts. 58 a 62.']);
+  cl('Décima','Da prestação de contas',[
+    'A prestação de contas observará os arts. 63 a 72 da Lei nº 13.019/2014, priorizado o controle de resultados, com apresentação de relatório de execução do objeto e, quando exigido, de relatório de execução financeira.']);
+  cl('Décima Primeira','Dos bens remanescentes',[
+    'Os bens eventualmente adquiridos, produzidos ou transformados com recursos da parceria terão sua destinação definida na forma do art. 36 da Lei nº 13.019/2014 e do Plano de Trabalho.']);
+  cl('Décima Segunda','Da proteção de dados pessoais (LGPD)',[
+    'As partes observarão a Lei nº 13.709/2018 no tratamento de dados pessoais sensíveis de saúde, com base legal, finalidade específica, segurança da informação e encarregado indicado, vedado uso diverso do objeto.']);
+  cl('Décima Terceira','Das sanções',[
+    'Pela execução da parceria em desacordo com o Plano de Trabalho e com as normas aplicáveis, a Administração poderá aplicar as sanções do art. 73 da Lei nº 13.019/2014 (advertência, suspensão temporária e declaração de inidoneidade), assegurados o contraditório e a ampla defesa.']);
+  cl('Décima Quarta','Da denúncia e da rescisão',[
+    'O Termo poderá ser denunciado a qualquer tempo, com as responsabilidades das partes relativas ao período de vigência, e rescindido por descumprimento, mediante notificação prévia, nos termos do art. 42, XVI, da Lei nº 13.019/2014.']);
+  cl('Décima Quinta','Da publicidade',[
+    'A eficácia deste Termo fica condicionada à publicação do respectivo extrato no meio oficial de publicidade da Administração Pública, nos termos do art. 38 da Lei nº 13.019/2014.']);
+  cl('Décima Sexta','Do foro',[
+    'Fica eleito o foro da Comarca de '+x.alvo+' para dirimir as questões oriundas deste Termo, com renúncia a qualquer outro, por mais privilegiado que seja. E, por estarem de acordo, firmam o presente em 2 (duas) vias de igual teor e forma.']);
+  w.sign([
+    [x.orgao,'Administração Pública'],
+    ['[ INSTITUTO ] — Organização da Sociedade Civil','Representante legal'],
+  ]);
+  w.gap(6); w.p('Testemunhas: 1) ______________________________   2) ______________________________');
+  return w.done('Termo de Colaboração (MROSC) — Colo do útero DNA-HPV — '+x.alvo);
 }
 function _reqCalc(){ if(!lastCalc){ alert('Selecione um município ou estado primeiro.'); return false;} return true; }
 function baixarPropTec(){ if(!_reqCalc())return; const {jsPDF}=window.jspdf; const d=new jsPDF({unit:'pt',format:'a4'});
