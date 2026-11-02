@@ -645,7 +645,6 @@ function calc(){
   document.getElementById('funnel-head').innerHTML =
     'Neste cenário, o programa <b>convoca '+fmt(adicionais)+'</b> mulheres ainda sem rastreio e <b>atende (testa) '+fmt(testes)+'</b> — em '+prazo+' '+(prazo==1?'mês':'meses')+' ('+fmt(Math.round(testesMes))+' testes/mês). '+
     'Dessas, ~<b>'+fmt(hpvPos)+'</b> dão HPV+ de alto risco e ~<b>'+fmt(lesoes)+'</b> têm lesão de alto grau a tratar.';
-  renderPate();
   const vinp=document.getElementById('in-valor-alvo'); if(vinp && document.activeElement!==vinp) vinp.value=custoPrograma.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   document.getElementById('roi-custo').textContent=fmtMoney(custoPrograma);
   document.getElementById('roi-cpm').textContent = mortesEvit>0?fmtMoney(custoPorMorte):'—';
@@ -664,6 +663,7 @@ function calc(){
       ['Adesão ao convite',(ades*100).toFixed(0)+'%'],['Prevalência HPV alto risco',(prev*100).toFixed(0)+'%'],
       ['Lesões NIC2+ entre HPV+',(pLes*100).toFixed(0)+'%'],['Progressão a câncer evitada',(pProg*100).toFixed(0)+'%'],
       ['Preço unitário do kit','R$ '+preco.toLocaleString('pt-BR')],['Prazo de execução',prazo+' meses']]};
+  renderPate();   // depois de lastCalc: a reconciliação SUS 360 usa o custo deste cenário
   atualizarBotoesRota();
 }
 
@@ -1072,6 +1072,27 @@ function renderPate(){
   else if(saldo>0){ tag='Potencial — ainda há recurso a comprovar com produção ('+pct.toFixed(0)+'% executado)'; cor='#B4126A'; }
   else { tag='Execução em dia — recurso antecipado já consumido'; cor='#12A97A'; }
   const linha=(r,v,hint)=>`<tr><td style="padding:4px 10px;border-top:1px solid #f6e6ef">${r}${hint?'<br><span style="color:#9A6A86;font-size:11px">'+hint+'</span>':''}</td><td style="padding:4px 10px;border-top:1px solid #f6e6ef;text-align:right;font-weight:700;color:var(--wine);white-space:nowrap">${v}</td></tr>`;
+  // ---- Reconciliação custo da ação × recurso SUS 360 ----
+  // Envelope = "saldo a comprovar inteiro" (o campo saldo já inclui a fatia OCI/ambulatorial; Mutirão fica como oportunidade à parte, p/ não duplicar).
+  const c=lastCalc, pop=selected[3]||0;
+  const envelope=saldo;                                    // recurso federal já antecipado ainda a comprovar
+  const custoMeta=c?c.custoPrograma:0;                     // custo p/ a cobertura-meta do cenário
+  const preco=c?c.preco:0, ades=c?c.ades:0, covA=c?c.covA:0, covM=c?c.covM:0;
+  const custoTestada=preco, custoConvocada=preco*ades;     // R$/mulher rastreada (teste e convite)
+  // cobertura que o envelope financia, a partir da atual, limitada a 100%
+  const metaViavel = (preco>0&&ades>0&&pop>0) ? Math.min(1, covA + envelope/(preco*ades*pop)) : covA;
+  const sobra = envelope>=custoMeta, folga=Math.max(0,envelope-custoMeta), falta=Math.max(0,custoMeta-envelope);
+  console.assert(metaViavel>=covA-1e-9 && metaViavel<=1+1e-9, 'metaViavel fora de [covA,1]');
+  console.assert((envelope>=custoMeta) === (metaViavel>=covM-1e-9) || custoMeta<=0, 'sobra deve equivaler a metaViavel>=meta');
+  let dimTag,dimCor,dimTxt;
+  if(custoMeta<=0){ dimTag=''; }
+  else if(envelope<=0){ dimCor='#B4126A'; dimTag='Sem saldo a comprovar nesta competência';
+    dimTxt='O recurso antecipado já foi consumido (ou não há antecipação). Orce a ação por <b>MAC</b> (produção nova do rastreio) e/ou <b>emenda</b>; a produção pode ser enquadrada no <b>Mutirão das Mulheres</b>'+(mm>0?' (o gestor já tem valor nessa rubrica).':'.');
+  } else if(sobra){ dimCor='#12A97A'; dimTag='O recurso cobre a meta de '+(covM*100).toFixed(0)+'% com folga';
+    dimTxt='A ação até '+(covM*100).toFixed(0)+'% custa <b>'+fmtMoney(custoMeta)+'</b> e o saldo a comprovar é <b>'+fmtMoney(envelope)+'</b> → <b>folga de '+fmtMoney(folga)+'</b>. O mutirão converte esse recurso parado em produção (rastreio + seguimento das HPV+), cumprindo o encontro de contas do PATE e evitando a glosa. A folga ainda comporta o seguimento e/ou ampliar a meta além de '+(covM*100).toFixed(0)+'%.';
+  } else { dimCor='#C81E5B'; dimTag='O recurso financia cobertura até ~'+(metaViavel*100).toFixed(0)+'%';
+    dimTxt='O saldo a comprovar (<b>'+fmtMoney(envelope)+'</b>) financia levar a cobertura de '+(covA*100).toFixed(0)+'% a <b>~'+(metaViavel*100).toFixed(0)+'%</b>. Para a meta de '+(covM*100).toFixed(0)+'% faltam <b>'+fmtMoney(falta)+'</b> — a complementar por <b>MAC</b> (produção nova), <b>emenda</b> ou <b>Mutirão das Mulheres</b>. Sugestão: dimensionar o 1º ciclo ao recurso disponível (~'+(metaViavel*100).toFixed(0)+'%) e pactuar o complemento para os ciclos seguintes.';
+  }
   box.innerHTML = `
   <div style="border:1px solid #f3cfe3;border-radius:12px;overflow:hidden">
     <div style="background:linear-gradient(90deg,var(--wine),var(--pink));color:#fff;padding:10px 14px;font-weight:700;font-size:13.5px">
@@ -1084,7 +1105,11 @@ function renderPate(){
       ${linha('Saldo a comprovar com produção', brl(saldo), 'NÃO é caixa — é recurso cuja contrapartida (serviço prestado) ainda falta entregar')}
       ${linha('Componente ambulatorial (OCI)', brl(repAmb)+' → '+brl(prodAmb), 'é aqui que entra o seguimento das mulheres HPV+')}
       ${linha('Mutirão das Mulheres', brl(mm), mm>0?'o gestor já tem valor nesta rubrica (adesão comprovada)':'ainda sem valor — oportunidade de enquadramento')}
+      ${custoMeta>0?linha('Custo da ação × recurso disponível', fmtMoney(custoMeta)+' / '+fmtMoney(envelope), 'custo p/ a meta de '+(covM*100).toFixed(0)+'% · saldo a comprovar (envelope da ação)'):''}
+      ${custoMeta>0?linha('Custo por mulher rastreada', fmtMoney(custoTestada)+' / '+fmtMoney(custoConvocada), 'por mulher testada (preço do kit) · por mulher convocada (× adesão)'):''}
     </table>
+    ${dimTag?`<div style="padding:9px 14px;background:${dimCor}14;border-top:1px solid #f3cfe3;color:${dimCor};font-weight:700;font-size:12.5px">⚖️ Dimensionamento pela fonte — ${dimTag}</div>
+    <div style="padding:9px 14px;background:#fff;font-size:12px;color:var(--wine);line-height:1.55;border-top:1px solid #f6e6ef">${dimTxt}</div>`:''}
     <div style="padding:10px 14px;background:#fff0f7;font-size:12px;color:var(--wine);line-height:1.55">
       <b>Como usar (sequência):</b> 1) o rastreio por DNA-HPV é pago por <b>MAC</b> (SIGTAP 0202100251); 2) os positivos geram <b>seguimento</b> (colposcopia, biópsia, EZT) = <b>produção ambulatorial OCI</b>; 3) essa produção <b>consome o saldo acima</b> e cumpre o encontro de contas do PATE (NT 33/2026); 4) pode ser contabilizada no <b>Mutirão das Mulheres</b>. Em resumo: o mutirão PinkPapa é o meio de ${ente} executar recurso federal já antecipado — evitando a glosa por não-produção.
     </div>
