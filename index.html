@@ -370,7 +370,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-11-02 13:30 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-11-02 18:17 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>
@@ -1434,20 +1434,33 @@ function renderPate(){
   } else { dimCor='#12A97A'; dimTag='O saldo cobre a meta de '+(R.covM*100).toFixed(0)+'% com folga de '+fmtMoney(R.folga);
     dimTxt='A ação até a meta de '+(R.covM*100).toFixed(0)+'% custa <b>'+fmtMoney(R.custoMeta)+'</b> e rastreia <b>~'+fmt(R.acaoTestadas)+' mulheres</b>; o saldo a comprovar (<b>'+fmtMoney(R.envelope)+'</b>) cobre a ação com <b>folga de '+fmtMoney(R.folga)+'</b>, que comporta o seguimento das HPV+ e o próximo ciclo. O mutirão converte esse recurso parado em produção, cumprindo o encontro de contas do PATE e evitando a glosa.';
   }
+  // KPI tiles e barra de execução — destaca os 3 números que decidem (saldo, execução, ação que cabe)
+  const execPct = Math.max(0, Math.min(100, pct));
+  const execCor = pct>=100 ? 'var(--green)' : 'var(--pink)';
+  const tile=(label,val,sub,accent,extra)=>`<div style="flex:1 1 150px;background:#fff;border:1px solid #f3cfe3;border-radius:11px;padding:11px 13px">
+    <div style="font-size:10.5px;color:#9A6A86;font-weight:700;text-transform:uppercase;letter-spacing:.4px">${label}</div>
+    <div style="font-size:23px;font-weight:800;color:${accent||'var(--wine)'};line-height:1.12;margin-top:4px">${val}</div>
+    ${extra||''}
+    <div style="font-size:11px;color:#9A6A86;margin-top:4px;line-height:1.35">${sub}</div></div>`;
+  const execBar=`<div style="height:8px;background:#f6e6ef;border-radius:5px;overflow:hidden;margin-top:6px"><div style="height:100%;width:${execPct}%;background:linear-gradient(90deg,var(--wine),var(--pink))"></div></div>`;
+  const acaoTile = R&&!R.semSaldo
+    ? tile('Ação que cabe no saldo', '<b>'+fmt(R.acaoTestadas)+'</b> mulheres', 'cobertura '+(R.covA*100).toFixed(0)+'% → ~'+(R.covB*100).toFixed(0)+'% (+'+R.ptsAcao.toFixed(0)+' pts) · '+(R.saldoLimita?'saldo é o teto':'saldo sobra '+fmtMoney(R.folga)), 'var(--pink)')
+    : tile('Como orçar a ação', 'MAC / emenda', 'sem saldo a comprovar nesta competência — enquadrável no Mutirão das Mulheres', 'var(--pink)');
   box.innerHTML = `
   <div style="border:1px solid #f3cfe3;border-radius:12px;overflow:hidden">
     <div style="background:linear-gradient(90deg,var(--wine),var(--pink));color:#fff;padding:10px 14px;font-weight:700;font-size:13.5px">
       🏛️ Viabilidade orçamentária — Programa Agora Tem Especialistas (SUS 360)
       <span style="font-weight:400;font-size:11px;opacity:.92"> · ${PATE_COMP}</span></div>
     <div style="padding:8px 14px;background:${cor}14;border-bottom:1px solid #f3cfe3;color:${cor};font-weight:700;font-size:13px">${tag}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;background:#fff7fb">
+      ${tile('Saldo a comprovar', brl(saldo), '<b>não é caixa:</b> recurso já no fundo que ainda falta comprovar com serviço prestado — sem produção, há glosa', 'var(--wine)')}
+      ${tile('Execução comprovada', pct.toFixed(0)+'%', brl(prod)+' de '+brl(rep)+' já aprovados em SIA/SIH', execCor, execBar)}
+      ${acaoTile}
+    </div>
     <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-      ${linha('Recursos antecipados ao fundo', brl(rep), 'parcela única + emendas já transferidas ao fundo de saúde')}
-      ${linha('Produção aprovada (SIA/SIH)', brl(prod)+' · '+pct.toFixed(0)+'%', 'quanto já foi executado e comprovado')}
-      ${linha('Saldo a comprovar com produção', brl(saldo), 'NÃO é caixa — é recurso cuja contrapartida (serviço prestado) ainda falta entregar')}
-      ${linha('Componente ambulatorial (OCI)', brl(repAmb)+' → '+brl(prodAmb), 'é aqui que entra o seguimento das mulheres HPV+')}
-      ${linha('Mutirão das Mulheres', brl(mm), mm>0?'o gestor já tem valor nesta rubrica (adesão comprovada)':'ainda sem valor — oportunidade de enquadramento')}
-      ${R?linha('Custo por mulher rastreada', fmtMoney(R.custoTestada)+' / '+fmtMoney(R.custoConvocada), 'por mulher testada (preço do kit) · por mulher convocada (× adesão)'):''}
-      ${R&&!R.semSaldo?linha('Ação que cabe no saldo', '<b>'+fmt(R.acaoTestadas)+'</b> mulheres · +'+R.ptsAcao.toFixed(0)+' pts', (R.covA*100).toFixed(0)+'% → ~'+(R.covB*100).toFixed(0)+'% de cobertura · '+(R.saldoLimita?'saldo é o teto':'demanda é o teto (saldo sobra '+fmtMoney(R.folga)+')')):''}
+      ${linha('Componente ambulatorial (OCI)', brl(repAmb)+' repassado → '+brl(prodAmb)+' produzido', 'é onde entra o seguimento das HPV+ (colposcopia, biópsia, EZT) — gap a preencher')}
+      ${linha('Mutirão das Mulheres', brl(mm), mm>0?'o gestor já tem valor nesta rubrica (adesão comprovada)':'ainda sem valor — oportunidade de enquadramento da produção')}
+      ${R?linha('Custo por mulher rastreada', fmtMoney(R.custoTestada)+' / teste · '+fmtMoney(R.custoConvocada)+' / convocada', 'preço do kit por mulher testada · diluído pela adesão por mulher convocada'):''}
     </table>
     ${dimTag?`<div style="padding:9px 14px;background:${dimCor}14;border-top:1px solid #f3cfe3;color:${dimCor};font-weight:700;font-size:12.5px">⚖️ Dimensionamento pela fonte — ${dimTag}</div>
     <div style="padding:9px 14px;background:#fff;font-size:12px;color:var(--wine);line-height:1.55;border-top:1px solid #f6e6ef">${dimTxt}</div>`:''}
