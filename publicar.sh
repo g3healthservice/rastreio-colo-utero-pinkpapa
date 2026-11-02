@@ -5,7 +5,8 @@ cd "$(dirname "$0")"
 export PATH="$HOME/bin:$PATH"
 python3 gerar_dashboard_pinkpapa.py
 cp index.html ~/Downloads/Dashboard_PinkPapa_Municipios.html
-git add -A
+# só o painel gerado — evita empurrar CSVs de contato/e-mail e scripts ao repo público
+git add index.html
 git commit -q -m "Atualiza painel PinkPapa ($(date +%F' '%H:%M))
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" || echo "nada a commitar"
