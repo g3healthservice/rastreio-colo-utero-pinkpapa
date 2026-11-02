@@ -27,7 +27,7 @@ def novo():
     doc = Document()
     st = doc.styles["Normal"].font
     st.name = "Times New Roman"
-    st.size = Pt(12)
+    st.size = Pt(11)
     return doc
 
 

@@ -370,7 +370,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-11-02 10:26 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-11-02 10:45 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>
@@ -1162,7 +1162,7 @@ function montarPDF(){
   }
 
   /* ======== PÁGINA 1 — CAPA hi-tech ======== */
-  gradiente(0,0,W,H,[230,0,126],[36,12,26]);
+  gradiente(0,0,W,H,[243,110,170],[150,28,96]);
   // grid decorativo
   doc.setDrawColor(255,255,255);doc.setLineWidth(0.3);
   for(let i=1;i<7;i++){doc.setGState(new doc.GState({opacity:0.07}));doc.line(0,H*i/7,W,H*i/7);doc.line(W*i/7,0,W*i/7,H);}
@@ -1335,7 +1335,7 @@ function montarPDF(){
   /* ======== PÁGINA 5 — INVESTIMENTO ======== */
   doc.addPage();y=header('Investimento e custo-benefício');
   // caixa do valor
-  gradiente(M,y,W-2*M,76,[230,0,126],[124,29,79]);
+  gradiente(M,y,W-2*M,76,[243,110,170],[150,28,96]);
   doc.setTextColor(255,190,225);doc.setFont('helvetica','bold');doc.setFontSize(8);
   doc.text('VALOR TOTAL DA CONTRATAÇÃO / AQUISIÇÃO',M+16,y+22);
   doc.setTextColor(255);doc.setFontSize(26);doc.text(fmtMoney(c.custoPrograma),M+16,y+52);
@@ -1434,74 +1434,75 @@ function renderPate(){
 function baixarPDF(){const r=montarPDF();if(r) r.doc.save(nomeArq());}
 
 /* ===== documentos técnicos (proposta técnica + nota técnica) em PDF ===== */
+/* Proposta Técnica e Nota Técnica: formato de texto padrão (Times, cab. 12 / corpo 11, justificado).
+   Mantém a API (titleblock/toc/box/h1/p/li/tbl/link/sign) usada pelos geradores e o render em 2 passes. */
 function _tec(doc,titulo,alvo){
-  const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=44;
+  const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
+  const ML=72,MR=57,MT=60,MB=56,CW=W-ML-MR,LH=15.4;
   let y, startPage;
-  function band(){ doc.setFillColor(...C_PINK);doc.rect(0,0,W,6,'F');
-    doc.setTextColor(...C_WINE);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('PINKPAPA · PINKLAB',M,24);
-    doc.setTextColor(...C_GREY);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
-    doc.text(doc.splitTextToSize(titulo+' — '+alvo,W/2-10),W-M,24,{align:'right'});
-    doc.setDrawColor(240,215,230);doc.line(M,32,W-M,32); return 50; }
-  function nl(){ doc.addPage(); y=band(); }
-  function ensure(h){ if(y+h>H-34) nl(); }
-  const tocH=n=>22+n*13+12;   // altura do bloco "Conteúdo" para n itens
+  function head(){ doc.setFont('times','italic');doc.setFontSize(9);doc.setTextColor(90,90,90);
+    doc.text(doc.splitTextToSize(titulo+' — '+alvo,CW),ML,MT-22,{align:'left'});
+    doc.setDrawColor(0,0,0);doc.setLineWidth(0.3);doc.line(ML,MT-12,W-MR,MT-12);
+    doc.setTextColor(0,0,0); return MT; }
+  function nl(){ doc.addPage(); y=head(); }
+  function ensure(h){ if(y+h>H-MB) nl(); }
+  function body(){ doc.setFont('times','normal');doc.setFontSize(11);doc.setTextColor(0,0,0); }
+  function just(L){ return (L.length>1)?{align:'justify',maxWidth:CW}:{}; }
+  const tocH=n=>20+n*14+14;   // deve coincidir com toc() para o render em 2 passes
   const api={
     sections:[],   // {title,page} capturado em cada h1 (p/ o sumário)
-    begin(append){ if(append) doc.addPage(); startPage=doc.internal.getNumberOfPages(); api.startPage=startPage; y=band(); return api; },
-    // bloco-título (capa interna) no topo da 1ª página
-    titleblock(meta){ const h=52+meta.linhas.length*12;
-      doc.setFillColor(252,231,242);doc.roundedRect(M,y,W-2*M,h,6,6,'F');
-      doc.setFillColor(...C_PINK);doc.rect(M,y,4,h,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(...C_WINE);doc.text(meta.tipo,M+16,y+21);
-      doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(60,40,52);doc.text(doc.splitTextToSize(meta.sub,W-2*M-28),M+16,y+35);
-      doc.setFontSize(8.2);doc.setTextColor(...C_GREY);
-      meta.linhas.forEach((l,i)=>doc.text(doc.splitTextToSize(l,W-2*M-28),M+16,y+48+i*12));
-      y+=h+14; return api; },
-    tocReserve(n){ y+=tocH(n); return api; },   // pass-1: reserva o mesmo espaço do sumário
-    toc(entries){ const n=entries.length,h=tocH(n);
-      doc.setDrawColor(240,215,230);doc.roundedRect(M,y,W-2*M,h,6,6,'S');
-      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C_WINE);doc.text('CONTEÚDO',M+12,y+15);
-      doc.setFont('helvetica','normal');doc.setFontSize(8.6);
-      entries.forEach((e,i)=>{ const yy=y+28+i*13;
-        doc.setTextColor(40,28,38);doc.textWithLink(e.title,M+12,yy,{pageNumber:startPage+(e.page-1)});
-        doc.setTextColor(...C_GREY);doc.text('p. '+e.page,W-M-12,yy,{align:'right'}); });
-      y+=h+14; return api; },
-    box(label,value){ ensure(46); const h=34;
-      doc.setFillColor(252,231,242);doc.roundedRect(M,y,W-2*M,h,5,5,'F');doc.setFillColor(...C_PINK);doc.rect(M,y,3,h,'F');
-      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...C_GREY);doc.text(label,M+14,y+13);
-      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...C_WINE);doc.text(value,M+14,y+28);
-      y+=h+12; return api; },
+    startPage:1,
+    begin(append){ if(append) doc.addPage(); startPage=doc.internal.getNumberOfPages(); api.startPage=startPage; y=head(); return api; },
+    titleblock(meta){
+      doc.setFont('times','bold');doc.setFontSize(13);doc.setTextColor(0,0,0);
+      let L=doc.splitTextToSize(meta.tipo,CW); L.forEach((ln,i)=>doc.text(ln,W/2,y+13+i*16,{align:'center'})); y+=L.length*16+5;
+      doc.setFont('times','normal');doc.setFontSize(11);
+      L=doc.splitTextToSize(meta.sub,CW); L.forEach((ln,i)=>doc.text(ln,W/2,y+12+i*14,{align:'center'})); y+=L.length*14+10;
+      doc.setFontSize(10.5);doc.setTextColor(40,40,40);
+      meta.linhas.forEach(l=>{ const LL=doc.splitTextToSize(l,CW); LL.forEach((ln,i)=>doc.text(ln,ML,y+11+i*13)); y+=LL.length*13+1; });
+      doc.setTextColor(0,0,0);doc.setDrawColor(0,0,0);doc.setLineWidth(0.4);doc.line(ML,y+7,W-MR,y+7); y+=20; return api; },
+    tocReserve(n){ y+=tocH(n); return api; },
+    toc(entries){
+      doc.setFont('times','bold');doc.setFontSize(12);doc.setTextColor(0,0,0);doc.text('SUMÁRIO',ML,y+10); y+=20;
+      doc.setFont('times','normal');doc.setFontSize(11);
+      entries.forEach(e=>{ doc.textWithLink(e.title,ML,y+10,{pageNumber:startPage+(e.page-1)});
+        doc.text(String(e.page),W-MR,y+10,{align:'right'}); y+=14; });
+      y+=14; return api; },
+    box(label,value){ ensure(42);
+      doc.setDrawColor(0,0,0);doc.setLineWidth(0.5);doc.rect(ML,y,CW,30);
+      doc.setFont('times','normal');doc.setFontSize(10);doc.setTextColor(60,60,60);doc.text(label,ML+8,y+12);
+      doc.setFont('times','bold');doc.setFontSize(12);doc.setTextColor(0,0,0);doc.text(value,ML+8,y+25);
+      y+=30+12; return api; },
     h1(t){ ensure(30); api.sections.push({title:t,page:doc.internal.getCurrentPageInfo().pageNumber});
-      doc.setFillColor(...C_PINK);doc.rect(M,y+2,3,13,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(11.5);doc.setTextColor(...C_WINE);doc.text(t,M+9,y+12); y+=26; return api; },
-    p(t){ doc.setFont('helvetica','normal');doc.setFontSize(9.3);doc.setTextColor(40,28,38);
-      const L=doc.splitTextToSize(t,W-2*M); ensure(L.length*11.4+6); doc.text(L,M,y+9); y+=L.length*11.4+7; return api; },
-    li(t){ doc.setFont('helvetica','normal');doc.setFontSize(9.3);doc.setTextColor(40,28,38);
-      const L=doc.splitTextToSize(t,W-2*M-14); ensure(L.length*11.4+4);
-      doc.setTextColor(...C_PINK);doc.text('•',M+3,y+9);doc.setTextColor(40,28,38);doc.text(L,M+15,y+9); y+=L.length*11.4+5; return api; },
-    link(url){ doc.setFont('helvetica','normal');doc.setFontSize(8.6);doc.setTextColor(...C_PINK);
-      const L=doc.splitTextToSize(url,W-2*M); ensure(L.length*10.6+6);
-      L.forEach((ln,i)=>doc.textWithLink(ln,M,y+9+i*10.6,{url})); doc.setTextColor(40,28,38); y+=L.length*10.6+8; return api; },
-    tbl(head,body,cw,rightCols){ ensure(42);
+      doc.setFont('times','bold');doc.setFontSize(12);doc.setTextColor(0,0,0);
+      const L=doc.splitTextToSize(t.toUpperCase(),CW); L.forEach((ln,i)=>doc.text(ln,ML,y+12+i*15)); y+=L.length*15+9; return api; },
+    p(t){ body(); const L=doc.splitTextToSize(t,CW); ensure(L.length*LH+6); doc.text(L,ML,y+11,just(L)); y+=L.length*LH+7; return api; },
+    li(t){ body(); const L=doc.splitTextToSize(t,CW-16); ensure(L.length*LH+4);
+      doc.text('•',ML+3,y+11); doc.text(L,ML+16,y+11,(L.length>1)?{align:'justify',maxWidth:CW-16}:{}); y+=L.length*LH+5; return api; },
+    link(url){ body(); const L=doc.splitTextToSize(url,CW); ensure(L.length*LH+6);
+      L.forEach((ln,i)=>doc.textWithLink(ln,ML,y+11+i*LH,{url})); y+=L.length*LH+8; return api; },
+    tbl(head0,body0,cw,rightCols){ ensure(42);
       const cs=Object.assign({},cw||{});
       (rightCols||[]).forEach(ci=>cs[ci]=Object.assign({halign:'right'},cs[ci]||{}));
-      doc.autoTable({startY:y,head:[head],body:body,margin:{left:M,right:M,top:40},theme:'striped',
-        headStyles:{fillColor:C_PINK,fontSize:8.3,textColor:255,halign:'left'},
-        styles:{fontSize:8,cellPadding:5,lineColor:[244,222,234],lineWidth:0.3,overflow:'linebreak',textColor:[40,28,38]},
-        alternateRowStyles:{fillColor:[252,243,248]},
-        columnStyles:cs,didDrawPage:function(){ if(doc.internal.getCurrentPageInfo().pageNumber>startPage){ doc.setFillColor(...C_PINK);doc.rect(0,0,W,6,'F'); } }});
-      y=doc.lastAutoTable.finalY+14; return api; },
-    sign(contratante){ ensure(96); y+=22;
-      doc.setDrawColor(120,110,116); doc.line(M,y,M+210,y); doc.line(W-M-210,y,W-M,y);
-      doc.setFont('helvetica','normal');doc.setFontSize(8.6);doc.setTextColor(60,50,56);
-      doc.text(doc.splitTextToSize(contratante,210),M,y+12); doc.text('Contratante',M,y+12+2+ (doc.splitTextToSize(contratante,210).length*10));
-      doc.text('[ Executante técnico ]',W-M-210,y+12); doc.text('Executante técnico',W-M-210,y+24);
-      y+=46; doc.text('Local e data: ____________________________________, ______ de __________________ de 2026.',M,y); return api; },
+      doc.autoTable({startY:y,head:[head0],body:body0,margin:{left:ML,right:MR,top:MT},theme:'grid',
+        headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',lineColor:[0,0,0],lineWidth:0.4,font:'times',fontSize:10},
+        styles:{font:'times',fontSize:10,cellPadding:4,lineColor:[0,0,0],lineWidth:0.4,overflow:'linebreak',textColor:[0,0,0]},
+        columnStyles:cs});
+      y=doc.lastAutoTable.finalY+12; return api; },
+    sign(contratante){ ensure(96); y+=24;
+      doc.setFont('times','normal');doc.setFontSize(11);doc.setTextColor(0,0,0);
+      const Lc=doc.splitTextToSize(contratante,230);
+      doc.text('______________________________________',ML,y);
+      doc.text('______________________________________',W-MR-230,y);
+      doc.text(Lc,ML,y+13); doc.text('Interessado / Contratante',ML,y+13+Lc.length*12);
+      doc.text('[ Executante técnico ]',W-MR-230,y+13); doc.text('Executante técnico',W-MR-230,y+25);
+      y+=50; doc.text('Local e data: ____________________________________, ______ de __________________ de 2026.',ML,y); return api; },
     footer(){ const n=doc.internal.getNumberOfPages();
       for(let i=startPage;i<=n;i++){ doc.setPage(i);
-        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...C_GREY);
-        doc.text('Rastreio por DNA-HPV (autocoleta) · documento de apoio à decisão',M,H-22);
-        doc.text('p. '+(i-startPage+1),W-M,H-22,{align:'right'}); } return api; }
+        doc.setFont('times','normal');doc.setFontSize(9);doc.setTextColor(0,0,0);
+        doc.setDrawColor(0,0,0);doc.setLineWidth(0.3);doc.line(ML,H-40,W-MR,H-40);
+        doc.text('Rastreio por DNA-HPV (autocoleta) · documento de apoio à decisão',ML,H-28);
+        doc.text('Página '+(i-startPage+1)+' de '+(n-startPage+1),W-MR,H-28,{align:'right'}); } return api; }
   };
   return api;
 }
@@ -1650,7 +1651,7 @@ function _ed(doc){
   const ML=72, MR=57, MT=60, MB=58, CW=W-ML-MR, LH=16.8;   // margens ~ABNT em pt
   let y=MT;
   function ensure(h){ if(y+h>H-MB){ doc.addPage(); y=MT; } }
-  function body(){ doc.setFont('times','normal'); doc.setFontSize(12); doc.setTextColor(0,0,0); }
+  function body(){ doc.setFont('times','normal'); doc.setFontSize(11); doc.setTextColor(0,0,0); }
   function just(L){ return (L.length>1)?{align:'justify',maxWidth:CW}:{}; }
   const api={
     title(lines){ doc.setTextColor(0,0,0);
