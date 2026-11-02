@@ -1044,9 +1044,13 @@ function montarPDF(){
         ['Saldo a comprovar (recurso já antecipado ao fundo)',fmtMoney(_r.envelope)],
         ['Custo por mulher rastreada',fmtMoney(_r.custoTestada)+' / teste · '+fmtMoney(_r.custoConvocada)+' / convocada'],
         ['Ação que cabe no saldo',_r.semSaldo?'—':fmt(_r.acaoTestadas)+' mulheres · +'+_r.ptsAcao.toFixed(0)+' pts de cobertura'],
+        ...(_r.saldoEmendas>0?[['Emendas parlamentares no saldo',fmtMoney(_r.saldoEmendas)]]:[]),
         ['Dimensionamento pela fonte',sit],
       ],theme:'grid',headStyles:{fillColor:C_WINE,fontSize:9},styles:{fontSize:8.4,cellPadding:4,lineColor:[240,215,230]},
       columnStyles:{1:{halign:'right'}},margin:{left:M,right:M}});
+    if(_r.saldoEmendas>0){ y=doc.lastAutoTable.finalY+10; doc.setFontSize(8);doc.setTextColor(120);
+      doc.text('Emendas no saldo — consultar nº, autor e andamento (Portal da Transparência, gestor na Busca Livre):',M,y);
+      doc.setTextColor(0,0,255); doc.textWithLink(_r.emendaURL,M,y+11,{url:_r.emendaURL}); doc.setTextColor(60); }
   }
   y=doc.lastAutoTable.finalY+30;
 
@@ -1124,6 +1128,7 @@ function renderPate(){
     <table style="width:100%;border-collapse:collapse;font-size:12.5px">
       ${linha('Componente ambulatorial (OCI)', brl(repAmb)+' repassado → '+brl(prodAmb)+' produzido', 'é onde entra o seguimento das HPV+ (colposcopia, biópsia, EZT) — gap a preencher')}
       ${linha('Mutirão das Mulheres', brl(mm), mm>0?'o gestor já tem valor nesta rubrica (adesão comprovada)':'ainda sem valor — oportunidade de enquadramento da produção')}
+      ${R&&R.saldoEmendas>0?linha('Emendas parlamentares no saldo', brl(R.saldoEmendas), 'parcela do saldo oriunda de emendas — o SUS 360 não traz o nº da emenda; consulte-as na fonte oficial abaixo'):''}
       ${R?linha('Custo por mulher rastreada', fmtMoney(R.custoTestada)+' / teste · '+fmtMoney(R.custoConvocada)+' / convocada', 'preço do kit por mulher testada · diluído pela adesão por mulher convocada'):''}
     </table>
     ${dimTag?`<div style="padding:9px 14px;background:${dimCor}14;border-top:1px solid #f3cfe3;color:${dimCor};font-weight:700;font-size:12.5px">⚖️ Dimensionamento pela fonte — ${dimTag}</div>
@@ -1136,6 +1141,11 @@ function renderPate(){
       🔗 Conferir estes números na fonte oficial — painel Saldo do Gestor (SUS 360) ↗
       <span style="font-weight:400;color:#9A6A86"> · ${selected[0]} · competência ${PATE_COMP}</span>
     </a>
+    ${R&&R.saldoEmendas>0?`<a href="${R.emendaURL}" target="_blank" rel="noopener"
+       style="display:block;padding:10px 14px;background:#fff;border-top:1px solid #f3cfe3;font-size:12px;font-weight:700;text-decoration:none">
+      🔎 Ver as emendas parlamentares deste gestor — Portal da Transparência ↗
+      <span style="font-weight:400;color:#9A6A86"> · ${selected[0]} já preenchido na Busca Livre — clique “Consultar” para ver nº, autor e andamento</span>
+    </a>`:''}
   </div>`;
 }
 function baixarPDF(){const r=montarPDF();if(r) r.doc.save(nomeArq());}
@@ -1226,6 +1236,12 @@ function _renderTec(doc,titulo,alvo,meta,sumario,body,append){
   return doc;
 }
 // reconciliação: dimensiona a ação pelo saldo SUS 360 (encaixe dinheiro × demanda). Fonte única p/ painel e peças.
+// emendas no saldo SUS 360 não trazem o nº da emenda/proposta — deep-link ao Portal da Transparência
+// com o gestor já preenchido na Busca Livre (palavraChave) + faixa de anos; usuário clica "Consultar".
+function emendasURL(nomeGestor){
+  const termo=(nomeGestor||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+  return 'https://portaldatransparencia.gov.br/emendas/consulta?termo='+encodeURIComponent(termo)+'&de=2024&ate=2026';
+}
 function reconFrom(c){
   const m=c.muni, key=m[4]?(PATE_UF[m[1]]||''):(m[5]||''), d=key?PATE[key]:null;
   if(!d) return null;
@@ -1240,7 +1256,8 @@ function reconFrom(c){
   const folga=Math.max(0,envelope-custoMeta), falta=Math.max(0,custoMeta-envelope);
   console.assert(acaoTestadas<=testadasSaldo+1 && (testesGap<=0||acaoTestadas<=testesGap),'reconFrom: ação excede saldo/demanda');
   return {d,pop,envelope,custoMeta,preco,ades,covA,covM,testesGap,testadasSaldo,acaoTestadas,acaoConvocadas,
-    ptsAcao,covB,semSaldo,saldoLimita,demandaLimita,folga,falta,custoTestada:preco,custoConvocada:preco*ades,mm:d.mutiraoMulheres||0};
+    ptsAcao,covB,semSaldo,saldoLimita,demandaLimita,folga,falta,custoTestada:preco,custoConvocada:preco*ades,mm:d.mutiraoMulheres||0,
+    saldoEmendas:d.saldoEmendas||0, emendaURL:emendasURL(m[0])};
 }
 function reconFrase(r){
   if(!r) return '';
