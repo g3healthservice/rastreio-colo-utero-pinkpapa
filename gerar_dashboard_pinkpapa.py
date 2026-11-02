@@ -1037,13 +1037,13 @@ function montarPDF(){
   const _r=reconFrom(c);
   if(_r){
     const sit=_r.semSaldo?'Sem saldo a comprovar — orçar por MAC/emenda (enquadrável no Mutirão das Mulheres)'
-      :_r.sobra?'Recurso federal já antecipado cobre a meta — folga de '+fmtMoney(_r.folga)
-      :'Recurso financia cobertura até ~'+(_r.metaViavel*100).toFixed(0)+'% — faltam '+fmtMoney(_r.falta)+' (MAC/emenda/Mutirão)';
+      :_r.saldoLimita?'Saldo é o teto — ação de ~'+fmt(_r.acaoTestadas)+' mulheres ('+(_r.covA*100).toFixed(0)+'%→~'+(_r.covB*100).toFixed(0)+'%); complemento p/ '+(_r.covM*100).toFixed(0)+'%: '+fmtMoney(_r.falta)
+      :'Demanda é o teto — saldo cobre a meta de '+(_r.covM*100).toFixed(0)+'% com folga de '+fmtMoney(_r.folga)+' (seguimento/próx. ciclo)';
     doc.autoTable({startY:doc.lastAutoTable.finalY+12,head:[['Viabilidade orçamentária — SUS 360 (PATE)','Valor']],
       body:[
-        ['Custo da ação (meta '+(_r.covM*100).toFixed(0)+'%)',fmtMoney(_r.custoMeta)],
         ['Saldo a comprovar (recurso já antecipado ao fundo)',fmtMoney(_r.envelope)],
         ['Custo por mulher rastreada',fmtMoney(_r.custoTestada)+' / teste · '+fmtMoney(_r.custoConvocada)+' / convocada'],
+        ['Ação que cabe no saldo',_r.semSaldo?'—':fmt(_r.acaoTestadas)+' mulheres · +'+_r.ptsAcao.toFixed(0)+' pts de cobertura'],
         ['Dimensionamento pela fonte',sit],
       ],theme:'grid',headStyles:{fillColor:C_WINE,fontSize:9},styles:{fontSize:8.4,cellPadding:4,lineColor:[240,215,230]},
       columnStyles:{1:{halign:'right'}},margin:{left:M,right:M}});
@@ -1087,26 +1087,16 @@ function renderPate(){
   else if(saldo>0){ tag='Potencial — ainda há recurso a comprovar com produção ('+pct.toFixed(0)+'% executado)'; cor='#B4126A'; }
   else { tag='Execução em dia — recurso antecipado já consumido'; cor='#12A97A'; }
   const linha=(r,v,hint)=>`<tr><td style="padding:4px 10px;border-top:1px solid #f6e6ef">${r}${hint?'<br><span style="color:#9A6A86;font-size:11px">'+hint+'</span>':''}</td><td style="padding:4px 10px;border-top:1px solid #f6e6ef;text-align:right;font-weight:700;color:var(--wine);white-space:nowrap">${v}</td></tr>`;
-  // ---- Reconciliação custo da ação × recurso SUS 360 ----
-  // Envelope = "saldo a comprovar inteiro" (o campo saldo já inclui a fatia OCI/ambulatorial; Mutirão fica como oportunidade à parte, p/ não duplicar).
-  const c=lastCalc, pop=selected[3]||0;
-  const envelope=saldo;                                    // recurso federal já antecipado ainda a comprovar
-  const custoMeta=c?c.custoPrograma:0;                     // custo p/ a cobertura-meta do cenário
-  const preco=c?c.preco:0, ades=c?c.ades:0, covA=c?c.covA:0, covM=c?c.covM:0;
-  const custoTestada=preco, custoConvocada=preco*ades;     // R$/mulher rastreada (teste e convite)
-  // cobertura que o envelope financia, a partir da atual, limitada a 100%
-  const metaViavel = (preco>0&&ades>0&&pop>0) ? Math.min(1, covA + envelope/(preco*ades*pop)) : covA;
-  const sobra = envelope>=custoMeta, folga=Math.max(0,envelope-custoMeta), falta=Math.max(0,custoMeta-envelope);
-  console.assert(metaViavel>=covA-1e-9 && metaViavel<=1+1e-9, 'metaViavel fora de [covA,1]');
-  console.assert((envelope>=custoMeta) === (metaViavel>=covM-1e-9) || custoMeta<=0, 'sobra deve equivaler a metaViavel>=meta');
+  // ---- Dimensionamento da ação pelo saldo SUS 360 (encaixe dinheiro × demanda) — fonte única: reconFrom ----
+  const R = lastCalc ? reconFrom(lastCalc) : null;
   let dimTag,dimCor,dimTxt;
-  if(custoMeta<=0){ dimTag=''; }
-  else if(envelope<=0){ dimCor='#B4126A'; dimTag='Sem saldo a comprovar nesta competência';
-    dimTxt='O recurso antecipado já foi consumido (ou não há antecipação). Orce a ação por <b>MAC</b> (produção nova do rastreio) e/ou <b>emenda</b>; a produção pode ser enquadrada no <b>Mutirão das Mulheres</b>'+(mm>0?' (o gestor já tem valor nessa rubrica).':'.');
-  } else if(sobra){ dimCor='#12A97A'; dimTag='O recurso cobre a meta de '+(covM*100).toFixed(0)+'% com folga';
-    dimTxt='A ação até '+(covM*100).toFixed(0)+'% custa <b>'+fmtMoney(custoMeta)+'</b> e o saldo a comprovar é <b>'+fmtMoney(envelope)+'</b> → <b>folga de '+fmtMoney(folga)+'</b>. O mutirão converte esse recurso parado em produção (rastreio + seguimento das HPV+), cumprindo o encontro de contas do PATE e evitando a glosa. A folga ainda comporta o seguimento e/ou ampliar a meta além de '+(covM*100).toFixed(0)+'%.';
-  } else { dimCor='#C81E5B'; dimTag='O recurso financia cobertura até ~'+(metaViavel*100).toFixed(0)+'%';
-    dimTxt='O saldo a comprovar (<b>'+fmtMoney(envelope)+'</b>) financia levar a cobertura de '+(covA*100).toFixed(0)+'% a <b>~'+(metaViavel*100).toFixed(0)+'%</b>. Para a meta de '+(covM*100).toFixed(0)+'% faltam <b>'+fmtMoney(falta)+'</b> — a complementar por <b>MAC</b> (produção nova), <b>emenda</b> ou <b>Mutirão das Mulheres</b>. Sugestão: dimensionar o 1º ciclo ao recurso disponível (~'+(metaViavel*100).toFixed(0)+'%) e pactuar o complemento para os ciclos seguintes.';
+  if(!R){ dimTag=''; }
+  else if(R.semSaldo){ dimCor='#B4126A'; dimTag='Sem saldo a comprovar nesta competência';
+    dimTxt='O recurso antecipado já foi consumido (ou não há antecipação). Orce a ação por <b>MAC</b> (produção nova do rastreio) e/ou <b>emenda</b>; a produção pode ser enquadrada no <b>Mutirão das Mulheres</b>'+(R.mm>0?' (o gestor já tem valor nessa rubrica).':'.');
+  } else if(R.saldoLimita){ dimCor='#C81E5B'; dimTag='A ação cabe em ~'+fmt(R.acaoTestadas)+' mulheres ('+(R.covA*100).toFixed(0)+'% → ~'+(R.covB*100).toFixed(0)+'%)';
+    dimTxt='O saldo a comprovar (<b>'+fmtMoney(R.envelope)+'</b>) financia uma ação de <b>~'+fmt(R.acaoTestadas)+' mulheres rastreadas</b> (convocando ~'+fmt(R.acaoConvocadas)+'), elevando a cobertura de '+(R.covA*100).toFixed(0)+'% para <b>~'+(R.covB*100).toFixed(0)+'%</b> — a ação executável com o recurso já no fundo. Para a meta de '+(R.covM*100).toFixed(0)+'% o complemento de <b>'+fmtMoney(R.falta)+'</b> entra por <b>MAC</b>, <b>emenda</b> ou <b>Mutirão das Mulheres</b> nos próximos ciclos.';
+  } else { dimCor='#12A97A'; dimTag='O saldo cobre a meta de '+(R.covM*100).toFixed(0)+'% com folga de '+fmtMoney(R.folga);
+    dimTxt='A ação até a meta de '+(R.covM*100).toFixed(0)+'% custa <b>'+fmtMoney(R.custoMeta)+'</b> e rastreia <b>~'+fmt(R.acaoTestadas)+' mulheres</b>; o saldo a comprovar (<b>'+fmtMoney(R.envelope)+'</b>) cobre a ação com <b>folga de '+fmtMoney(R.folga)+'</b>, que comporta o seguimento das HPV+ e o próximo ciclo. O mutirão converte esse recurso parado em produção, cumprindo o encontro de contas do PATE e evitando a glosa.';
   }
   box.innerHTML = `
   <div style="border:1px solid #f3cfe3;border-radius:12px;overflow:hidden">
@@ -1120,8 +1110,8 @@ function renderPate(){
       ${linha('Saldo a comprovar com produção', brl(saldo), 'NÃO é caixa — é recurso cuja contrapartida (serviço prestado) ainda falta entregar')}
       ${linha('Componente ambulatorial (OCI)', brl(repAmb)+' → '+brl(prodAmb), 'é aqui que entra o seguimento das mulheres HPV+')}
       ${linha('Mutirão das Mulheres', brl(mm), mm>0?'o gestor já tem valor nesta rubrica (adesão comprovada)':'ainda sem valor — oportunidade de enquadramento')}
-      ${custoMeta>0?linha('Custo da ação × recurso disponível', fmtMoney(custoMeta)+' / '+fmtMoney(envelope), 'custo p/ a meta de '+(covM*100).toFixed(0)+'% · saldo a comprovar (envelope da ação)'):''}
-      ${custoMeta>0?linha('Custo por mulher rastreada', fmtMoney(custoTestada)+' / '+fmtMoney(custoConvocada), 'por mulher testada (preço do kit) · por mulher convocada (× adesão)'):''}
+      ${R?linha('Custo por mulher rastreada', fmtMoney(R.custoTestada)+' / '+fmtMoney(R.custoConvocada), 'por mulher testada (preço do kit) · por mulher convocada (× adesão)'):''}
+      ${R&&!R.semSaldo?linha('Ação que cabe no saldo', '<b>'+fmt(R.acaoTestadas)+'</b> mulheres · +'+R.ptsAcao.toFixed(0)+' pts', (R.covA*100).toFixed(0)+'% → ~'+(R.covB*100).toFixed(0)+'% de cobertura · '+(R.saldoLimita?'saldo é o teto':'demanda é o teto (saldo sobra '+fmtMoney(R.folga)+')')):''}
     </table>
     ${dimTag?`<div style="padding:9px 14px;background:${dimCor}14;border-top:1px solid #f3cfe3;color:${dimCor};font-weight:700;font-size:12.5px">⚖️ Dimensionamento pela fonte — ${dimTag}</div>
     <div style="padding:9px 14px;background:#fff;font-size:12px;color:var(--wine);line-height:1.55;border-top:1px solid #f6e6ef">${dimTxt}</div>`:''}
@@ -1222,23 +1212,29 @@ function _renderTec(doc,titulo,alvo,meta,sumario,body,append){
   body(w); w.footer();
   return doc;
 }
-// reconciliação custo da ação × saldo SUS 360 (mesma lógica do painel renderPate), reusada pelas peças
+// reconciliação: dimensiona a ação pelo saldo SUS 360 (encaixe dinheiro × demanda). Fonte única p/ painel e peças.
 function reconFrom(c){
   const m=c.muni, key=m[4]?(PATE_UF[m[1]]||''):(m[5]||''), d=key?PATE[key]:null;
   if(!d) return null;
   const pop=m[3], envelope=d.saldo||0, custoMeta=c.custoPrograma, preco=c.preco, ades=c.ades, covA=c.covA, covM=c.covM;
-  const metaViavel=(preco>0&&ades>0&&pop>0)?Math.min(1,covA+envelope/(preco*ades*pop)):covA;
-  console.assert(metaViavel>=covA-1e-9 && metaViavel<=1+1e-9,'reconFrom: metaViavel fora de [covA,1]');
-  return {envelope,custoMeta,metaViavel,covA,covM,custoTestada:preco,custoConvocada:preco*ades,
-    folga:Math.max(0,envelope-custoMeta),falta:Math.max(0,custoMeta-envelope),
-    sobra:envelope>=custoMeta,semSaldo:envelope<=0,mm:d.mutiraoMulheres||0};
+  const testesGap=c.testes;                                  // testadas p/ atingir a meta
+  const testadasSaldo=preco>0?Math.floor(envelope/preco):0;  // o que o saldo em caixa paga
+  const acaoTestadas=Math.max(0, testesGap>0?Math.min(testadasSaldo,testesGap):testadasSaldo); // encaixe
+  const acaoConvocadas=ades>0?Math.round(acaoTestadas/ades):0;
+  const ptsAcao=pop>0?acaoTestadas/pop*100:0;                // +pontos de cobertura efetiva
+  const covB=covA+(pop>0?acaoTestadas/pop:0);                // cobertura resultante da ação
+  const semSaldo=envelope<=0, saldoLimita=!semSaldo&&testadasSaldo<testesGap, demandaLimita=!semSaldo&&!saldoLimita;
+  const folga=Math.max(0,envelope-custoMeta), falta=Math.max(0,custoMeta-envelope);
+  console.assert(acaoTestadas<=testadasSaldo+1 && (testesGap<=0||acaoTestadas<=testesGap),'reconFrom: ação excede saldo/demanda');
+  return {d,pop,envelope,custoMeta,preco,ades,covA,covM,testesGap,testadasSaldo,acaoTestadas,acaoConvocadas,
+    ptsAcao,covB,semSaldo,saldoLimita,demandaLimita,folga,falta,custoTestada:preco,custoConvocada:preco*ades,mm:d.mutiraoMulheres||0};
 }
 function reconFrase(r){
   if(!r) return '';
-  const pw='Custo por mulher rastreada: '+fmtMoney(r.custoTestada)+' por teste ('+fmtMoney(r.custoConvocada)+' por mulher convocada, ajustado pela adesão). ';
+  const pw='Custo por mulher rastreada: '+fmtMoney(r.custoTestada)+' por teste ('+fmtMoney(r.custoConvocada)+' por mulher convocada). ';
   if(r.semSaldo) return pw+'Não há saldo antecipado a comprovar nesta competência: a ação é orçada por MAC (produção nova do rastreio) e/ou emenda, podendo ser enquadrada no Mutirão das Mulheres.';
-  if(r.sobra) return pw+'A ação até a meta de '+(r.covM*100).toFixed(0)+'% custa '+fmtMoney(r.custoMeta)+', frente a um saldo a comprovar de '+fmtMoney(r.envelope)+' (folga de '+fmtMoney(r.folga)+'): o recurso federal já antecipado ao fundo cobre integralmente a ação, que converte esse saldo em produção e cumpre o encontro de contas do PATE (NT nº 33/2026), evitando a glosa por não-produção.';
-  return pw+'O saldo a comprovar ('+fmtMoney(r.envelope)+') financia elevar a cobertura de '+(r.covA*100).toFixed(0)+'% a aproximadamente '+(r.metaViavel*100).toFixed(0)+'%; para alcançar a meta de '+(r.covM*100).toFixed(0)+'% faltam '+fmtMoney(r.falta)+', a complementar por MAC (produção nova), emenda ou Mutirão das Mulheres. Recomenda-se dimensionar o primeiro ciclo ao recurso disponível e pactuar o complemento para os ciclos seguintes.';
+  if(r.saldoLimita) return pw+'Com o saldo a comprovar de '+fmtMoney(r.envelope)+', a ação cabe em aproximadamente '+fmt(r.acaoTestadas)+' mulheres rastreadas (convocando ~'+fmt(r.acaoConvocadas)+'), elevando a cobertura de '+(r.covA*100).toFixed(0)+'% para ~'+(r.covB*100).toFixed(0)+'% — é a ação executável com o recurso já no fundo. Para a meta de '+(r.covM*100).toFixed(0)+'% o complemento de '+fmtMoney(r.falta)+' entra por MAC (produção nova), emenda ou Mutirão das Mulheres nos ciclos seguintes.';
+  return pw+'A ação até a meta de '+(r.covM*100).toFixed(0)+'% custa '+fmtMoney(r.custoMeta)+' e rastreia aproximadamente '+fmt(r.acaoTestadas)+' mulheres; o saldo a comprovar ('+fmtMoney(r.envelope)+') cobre a ação com folga de '+fmtMoney(r.folga)+', que o município pode destinar ao seguimento das HPV+ e ao próximo ciclo. O mutirão converte esse recurso já antecipado em produção, cumprindo o encontro de contas do PATE (NT nº 33/2026) e evitando a glosa por não-produção.';
 }
 function _ctx(c){
   const m=c.muni, alvo=m[4]?m[0]:m[0]+'/'+m[1];
