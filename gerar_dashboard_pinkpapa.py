@@ -1033,6 +1033,21 @@ function montarPDF(){
   doc.autoTable({startY:y,head:[['Premissas utilizadas','Valor']],body:c.premissas,
     theme:'grid',headStyles:{fillColor:C_WINE,fontSize:9},styles:{fontSize:8.4,cellPadding:4,lineColor:[240,215,230]},
     columnStyles:{1:{halign:'right'}},margin:{left:M,right:M}});
+
+  const _r=reconFrom(c);
+  if(_r){
+    const sit=_r.semSaldo?'Sem saldo a comprovar — orçar por MAC/emenda (enquadrável no Mutirão das Mulheres)'
+      :_r.sobra?'Recurso federal já antecipado cobre a meta — folga de '+fmtMoney(_r.folga)
+      :'Recurso financia cobertura até ~'+(_r.metaViavel*100).toFixed(0)+'% — faltam '+fmtMoney(_r.falta)+' (MAC/emenda/Mutirão)';
+    doc.autoTable({startY:doc.lastAutoTable.finalY+12,head:[['Viabilidade orçamentária — SUS 360 (PATE)','Valor']],
+      body:[
+        ['Custo da ação (meta '+(_r.covM*100).toFixed(0)+'%)',fmtMoney(_r.custoMeta)],
+        ['Saldo a comprovar (recurso já antecipado ao fundo)',fmtMoney(_r.envelope)],
+        ['Custo por mulher rastreada',fmtMoney(_r.custoTestada)+' / teste · '+fmtMoney(_r.custoConvocada)+' / convocada'],
+        ['Dimensionamento pela fonte',sit],
+      ],theme:'grid',headStyles:{fillColor:C_WINE,fontSize:9},styles:{fontSize:8.4,cellPadding:4,lineColor:[240,215,230]},
+      columnStyles:{1:{halign:'right'}},margin:{left:M,right:M}});
+  }
   y=doc.lastAutoTable.finalY+30;
 
   if(y>H-120) { doc.addPage(); y=header('Aceite'); y+=10; }
@@ -1207,6 +1222,24 @@ function _renderTec(doc,titulo,alvo,meta,sumario,body,append){
   body(w); w.footer();
   return doc;
 }
+// reconciliação custo da ação × saldo SUS 360 (mesma lógica do painel renderPate), reusada pelas peças
+function reconFrom(c){
+  const m=c.muni, key=m[4]?(PATE_UF[m[1]]||''):(m[5]||''), d=key?PATE[key]:null;
+  if(!d) return null;
+  const pop=m[3], envelope=d.saldo||0, custoMeta=c.custoPrograma, preco=c.preco, ades=c.ades, covA=c.covA, covM=c.covM;
+  const metaViavel=(preco>0&&ades>0&&pop>0)?Math.min(1,covA+envelope/(preco*ades*pop)):covA;
+  console.assert(metaViavel>=covA-1e-9 && metaViavel<=1+1e-9,'reconFrom: metaViavel fora de [covA,1]');
+  return {envelope,custoMeta,metaViavel,covA,covM,custoTestada:preco,custoConvocada:preco*ades,
+    folga:Math.max(0,envelope-custoMeta),falta:Math.max(0,custoMeta-envelope),
+    sobra:envelope>=custoMeta,semSaldo:envelope<=0,mm:d.mutiraoMulheres||0};
+}
+function reconFrase(r){
+  if(!r) return '';
+  const pw='Custo por mulher rastreada: '+fmtMoney(r.custoTestada)+' por teste ('+fmtMoney(r.custoConvocada)+' por mulher convocada, ajustado pela adesão). ';
+  if(r.semSaldo) return pw+'Não há saldo antecipado a comprovar nesta competência: a ação é orçada por MAC (produção nova do rastreio) e/ou emenda, podendo ser enquadrada no Mutirão das Mulheres.';
+  if(r.sobra) return pw+'A ação até a meta de '+(r.covM*100).toFixed(0)+'% custa '+fmtMoney(r.custoMeta)+', frente a um saldo a comprovar de '+fmtMoney(r.envelope)+' (folga de '+fmtMoney(r.folga)+'): o recurso federal já antecipado ao fundo cobre integralmente a ação, que converte esse saldo em produção e cumpre o encontro de contas do PATE (NT nº 33/2026), evitando a glosa por não-produção.';
+  return pw+'O saldo a comprovar ('+fmtMoney(r.envelope)+') financia elevar a cobertura de '+(r.covA*100).toFixed(0)+'% a aproximadamente '+(r.metaViavel*100).toFixed(0)+'%; para alcançar a meta de '+(r.covM*100).toFixed(0)+'% faltam '+fmtMoney(r.falta)+', a complementar por MAC (produção nova), emenda ou Mutirão das Mulheres. Recomenda-se dimensionar o primeiro ciclo ao recurso disponível e pactuar o complemento para os ciclos seguintes.';
+}
 function _ctx(c){
   const m=c.muni, alvo=m[4]?m[0]:m[0]+'/'+m[1];
   const orgao=m[4]?(typeof UF_STATS!=='undefined'&&UF_STATS[m[1]]?UF_STATS[m[1]].orgao:('Secretaria de Saúde — '+m[0])):('Secretaria Municipal de Saúde de '+m[0]+'/'+m[1]);
@@ -1215,7 +1248,7 @@ function _ctx(c){
     hpv:Math.round(c.hpvPos),les:Math.round(c.lesoes),lesC:Math.round(c.lesoesCitoPerde),casos:Math.round(c.casosEvit),
     cito:Math.round(testes*0.0926),colp:Math.round(testes*0.0618),biop:Math.round(testes*0.0433),ezt:Math.round(testes*0.0155),
     fonte:c.fonteLabel||'Média e Alta Complexidade (MAC)', instr:c.instr||INSTRUMENTOS.MROSC,
-    receita:Math.round(c.custoPrograma),
+    receita:Math.round(c.custoPrograma), recon:reconFrom(c),
     painel:(()=>{const k=m[4]?(PATE_UF[m[1]]||''):(m[5]||'');return k?'https://sus360.saude.gov.br/painel/saldo-gestor/'+m[1]+'/'+k:'';})()};
 }
 function genPropostaTecnica(doc,c,append){
@@ -1266,6 +1299,7 @@ function genPropostaTecnica(doc,c,append){
     ['Kit de autocoleta (DNA-HPV + genotipagem + laboratório + IA + capacitação)',fmt(x.testes),fmtMoney(x.preco),fmtMoney(x.receita),x.fonte],
     ['Seguimento (citologia reflexa, colposcopia, biópsia, EZT)','conf. desdobr.','tabela SUS','programado na rede','MAC/FAEC/OCI'],
   ],{0:{cellWidth:180}},[1,2,3]);
+  if(x.recon) w.p('Dimensionamento pela fonte (SUS 360). '+reconFrase(x.recon));
   if(x.painel){ w.p('Fonte oficial da viabilidade orçamentária (Saldo do Gestor — Programa Agora Tem Especialistas / SUS 360, competência '+PATE_COMP+'):');
     w.link(x.painel); }
   w.h1('6. Governança e pontos de averiguação (TCU/MP)');
@@ -1307,6 +1341,7 @@ function genNotaTecnica(doc,c,append){
     ['Citologia reflexa','MAC / SIA','Produção na rede/laboratório'],
     ['Colposcopia, biópsia, EZT','MAC / FAEC / OCI','Programado na rede'],
   ],{0:{cellWidth:150}});
+  if(x.recon) w.p('Dimensionamento pela fonte (SUS 360). '+reconFrase(x.recon));
   if(x.painel){ w.p('Viabilidade orçamentária do gestor (Programa Agora Tem Especialistas / SUS 360, competência '+PATE_COMP+'): o seguimento das HPV+ gera produção ambulatorial que consome o saldo já antecipado ao fundo e cumpre o encontro de contas do PATE (NT nº 33/2026), evitando a glosa por não-produção. Os valores podem ser conferidos na fonte oficial:');
     w.link(x.painel); }
   w.h1('5. Estratificação de custos — custo da operação e margem');
