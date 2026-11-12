@@ -373,6 +373,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
         <button class="btn sec" onclick="baixarNotaTec()">🧾 Nota Técnica (serve às duas rotas)</button>
         <button class="btn sec" id="btnInstr" onclick="baixarInstrumento()">📗 Minuta do instrumento</button>
         <button class="btn sec" id="btnPeca" onclick="baixarPeca()">📙 Plano / Termo de Referência</button>
+        <a class="btn sec" href="projeto-ribeirao-preto.html" target="_blank" rel="noopener" style="text-decoration:none">📑 Apresentação do projeto (modelo · Ribeirão Preto)</a>
         <span class="note" style="width:100%;margin-top:4px">A rota <b>MROSC</b> gera Termo de Colaboração + Plano de Trabalho; a rota <b>Credenciamento</b> gera Edital de credenciamento + Termo de Referência.</span>
         <span class="note" style="width:100%;margin-top:4px">Modelos editáveis (.docx) — comuns: <a href="modelos/ETP_RastreioColoUtero_DNA-HPV.docx">ETP</a> · <a href="modelos/NotaTecnica_RastreioColoUtero_DNA-HPV.docx">Nota Técnica</a> · MROSC: <a href="modelos/MROSC_TermoColaboracao_RastreioColoUtero.docx">Termo de Colaboração</a> · <a href="modelos/MROSC_PlanoDeTrabalho_RastreioColoUtero.docx">Plano de Trabalho</a> · Credenciamento: <a href="modelos/Credenciamento_Edital_RastreioColoUtero.docx">Edital</a> · <a href="modelos/Credenciamento_TermoReferencia_RastreioColoUtero.docx">Termo de Referência</a></span>
       </div>
