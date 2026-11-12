@@ -359,6 +359,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
         <div class="fld" style="max-width:200px"><label>Contato — telefone (opcional)</label><input type="text" id="in-prop-tel" placeholder=""></div>
       </div>
       <div class="btnrow">
+        <button class="btn" onclick="baixarApresentacao()">🎯 Apresentação impactante (slides) — pronta para enviar ao gestor</button>
         <button class="btn" onclick="baixarPacote()">📦 Baixar pacote completo (proposta + proposta técnica + nota técnica)</button>
         <button class="btn sec" onclick="baixarPDF()">📄 Só a proposta (PNSB)</button>
         <button class="btn sec" onclick="baixarPropTec()">📑 Só a proposta técnica</button>
@@ -1149,6 +1150,175 @@ function renderPate(){
   </div>`;
 }
 function baixarPDF(){const r=montarPDF();if(r) r.doc.save(nomeArq());}
+
+/* ===== Apresentação (slides) — proposta técnica impactante, 1 por município ===== */
+/* NÃO substitui a proposta técnica textual: é a peça de impacto para enviar ao gestor.
+   Reaproveita _ctx/reconFrom/emendasURL e as cores da marca. Última página: lp.tealliance.com.br */
+function genApresentacao(doc,c){
+  const x=_ctx(c), R=x.recon, m=c.muni;
+  const W=842,H=595,ML=48,MR=48,CW=W-ML-MR;
+  const wine=C_WINE,pink=C_PINK,dark=C_DARK,grey=C_GREY,green=C_GREEN,white=[255,255,255];
+  const hoje=new Date(), ymd=hoje.toISOString().slice(0,10).replace(/-/g,'');
+  const ref='PP-DNAHPV-'+(m[5]||m[1]||'')+'-'+ymd, LP='lp.tealliance.com.br', LPU='https://lp.tealliance.com.br/';
+  const T=a=>doc.setTextColor(a[0],a[1],a[2]), F=a=>doc.setFillColor(a[0],a[1],a[2]);
+  let page=0;
+  function chrome(sec,titulo,sub){ page++;
+    T(wine);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('RASTREIO DNA-HPV · '+x.alvo.toUpperCase(),ML,30);
+    T(grey);doc.setFont('helvetica','normal');doc.text('Apresentação · proposta técnica',W-MR,30,{align:'right'});
+    doc.setDrawColor(240,215,230);doc.setLineWidth(.8);doc.line(ML,38,W-MR,38);
+    F(pink);doc.roundedRect(ML,52,32,32,5,5,'F');T(white);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text(sec,ML+16,73,{align:'center'});
+    T(wine);doc.setFontSize(19);doc.text(titulo,ML+44,68);
+    T(grey);doc.setFont('helvetica','normal');doc.setFontSize(10.5);doc.text(sub,ML+44,82);
+    T(grey);doc.setFontSize(8);doc.text('PinkPapa · PinkLab · Documento de apoio à decisão do gestor',ML,H-22);
+    doc.text(String(page).padStart(2,'0'),W-MR,H-22,{align:'right'});
+    return 108; }
+  function tiles(y,items,h){ h=h||64; const n=items.length,gap=12,tw=(CW-gap*(n-1))/n;
+    items.forEach((it,i)=>{ const tx=ML+i*(tw+gap);
+      F([255,247,251]);doc.setDrawColor(243,207,227);doc.setLineWidth(.8);doc.roundedRect(tx,y,tw,h,7,7,'FD');
+      T(grey);doc.setFont('helvetica','bold');doc.setFontSize(7.6);doc.text((it.k||'').toUpperCase(),tx+12,y+17);
+      T(it.a||wine);doc.setFontSize(it.fs||20);doc.text(doc.splitTextToSize(String(it.v),tw-22),tx+12,y+40);
+      if(it.s){T(grey);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(doc.splitTextToSize(it.s,tw-22),tx+12,y+h-18);} }); return y+h; }
+  function bullets(arr,colX,colW,y){ doc.setFont('helvetica','normal');doc.setFontSize(10.3);
+    arr.forEach(t=>{ F(pink);doc.circle(colX+3,y-3,1.7,'F');T(dark);const L=doc.splitTextToSize(t,colW-16);doc.text(L,colX+12,y);y+=L.length*13.5+7; }); return y; }
+  function para(t,y,w){ T(dark);doc.setFont('helvetica','normal');doc.setFontSize(10.6);const L=doc.splitTextToSize(t,w||CW);doc.text(L,ML,y);return y+L.length*14+6; }
+
+  // ---------- CAPA ----------
+  F(wine);doc.rect(0,0,W,H,'F');F(pink);doc.rect(0,0,W,7,'F');
+  T([255,205,230]);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('PROJETO TÉCNICO · '+hoje.getFullYear(),ML,118);
+  T(white);doc.setFontSize(33);doc.text(doc.splitTextToSize('Rastreio de câncer do colo do útero',CW),ML,166);
+  T([255,205,230]);doc.setFont('helvetica','normal');doc.setFontSize(15);
+  doc.text('DNA-HPV por autocoleta · mutirão com busca ativa e seguimento garantido',ML,200);
+  const cap=[['PREPARADO PARA',x.orgao],['PROPONENTE','PinkPapa · PinkLab'],
+    ['LOCAL E ALCANCE',x.alvo+' · '+fmt(x.pop)+' mulheres 25–64'],['DATA E REFERÊNCIA',dataExtenso(hoje)+' · '+ref]];
+  let cy=300; cap.forEach(([k,v])=>{ T([255,170,210]);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text(k,ML,cy);
+    T(white);doc.setFont('helvetica','normal');doc.setFontSize(12);doc.text(doc.splitTextToSize(v,CW/2),ML,cy+16);cy+=52; });
+  T([255,205,230]);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.textWithLink(LP,ML,H-40,{url:LPU});
+
+  // ---------- 02 · Sumário + KPIs ----------
+  doc.addPage(); let y=chrome('—','Sumário','O que este documento responde ao gestor');
+  const secs=['01 Apresentação — o projeto em uma página','02 Realidade e problema — o que falta hoje',
+    '03 Público-alvo e objetivos','04 A solução — DNA-HPV por autocoleta','05 Metodologia — a jornada da mulher',
+    '06 Dimensionamento e alcance','07 Investimento','08 Viabilidade orçamentária (SUS 360)',
+    '09 Contratação e decisão','10 Proponente e base documental'];
+  doc.setFont('helvetica','normal');doc.setFontSize(10.5);let sy=y+4;
+  secs.forEach((s,i)=>{ const col=i<5?ML:ML+CW/2+10, row=i%5; T(pink);doc.setFont('helvetica','bold');doc.text(String(i+1).padStart(2,'0'),col,sy+row*22);
+    T(dark);doc.setFont('helvetica','normal');doc.text(s.replace(/^\d\d\s/,''),col+22,sy+row*22); });
+  tiles(y+128,[{k:'Mulheres rastreadas',v:fmt(x.testes)},{k:'Convocadas (busca ativa)',v:'~'+fmt(x.conv)},
+    {k:'Cânceres evitados',v:'~'+fmt(x.casos),a:green},{k:'Investimento 1º ano',v:fmtMoney(x.receita),fs:16}],70);
+
+  // ---------- 03 · Apresentação ----------
+  doc.addPage(); y=chrome('01','Apresentação','O projeto em uma página');
+  y=tiles(y,[{k:'Objeto',v:'Mutirão DNA-HPV',s:'autocoleta + busca ativa + seguimento',fs:15},
+    {k:'Público',v:fmt(x.pop),s:'mulheres de 25–64 anos',fs:18},
+    {k:'Meta de cobertura',v:(c.covA*100).toFixed(0)+'%→'+(c.covM*100).toFixed(0)+'%',a:green,fs:16,s:'no alvo da OMS (70%)'},
+    {k:'Prazo',v:(c.prazo||12)+' meses',fs:17,s:'implantação em lotes'}],70)+18;
+  y=para('O rastreio por autocoleta de DNA-HPV alcança as mulheres que nunca se rastrearam e entrega maior sensibilidade que a citologia. O projeto convoca ~'+fmt(x.conv)+' mulheres, realiza '+fmt(x.testes)+' testes e garante o seguimento das positivas (colposcopia, biópsia e tratamento), estruturando a linha de cuidado e alinhando '+x.alvo+' às metas 90-70-90.',y);
+
+  // ---------- 04 · Realidade e problema ----------
+  doc.addPage(); y=chrome('02','Realidade e problema','Por que agir agora');
+  y=tiles(y,[{k:'Cobertura atual',v:(c.covA*100).toFixed(0)+'%',a:[200,30,91],s:'longe da meta de 70%'},
+    {k:'Citologia perde',v:'30–45%',a:[200,30,91],s:'das lesões de alto grau'},
+    {k:'Mortalidade (Brasil)',v:'1 óbito /90min',a:[200,30,91],s:'quase 100% evitável'},
+    {k:'Lesões que escapam',v:'~'+fmt(x.lesC),a:[200,30,91],s:'que o Papanicolau perderia'}],70)+16;
+  y=bullets(['A citologia tem baixa sensibilidade e exige coleta com espéculo, afastando parte das mulheres.',
+    'Sem busca ativa, as que nunca se rastrearam seguem fora do radar — justamente as de maior risco.',
+    'Positivas sem seguimento garantido evoluem para câncer — falha na linha de cuidado, não só no exame.'],ML,CW,y);
+
+  // ---------- 05 · Público-alvo e objetivos ----------
+  doc.addPage(); y=chrome('03','Público-alvo e objetivos','Do universo ao atendimento');
+  y=tiles(y,[{k:'População-alvo',v:fmt(x.pop)},{k:'Convocadas',v:'~'+fmt(x.conv)},
+    {k:'Testadas (adesão '+(c.ades*100).toFixed(0)+'%)',v:fmt(x.testes)},{k:'HPV alto risco +',v:'~'+fmt(x.hpv),a:[200,30,91]}],64)+18;
+  T(wine);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('OBJETIVOS',ML,y);y+=16;
+  y=bullets(['Elevar a cobertura de '+(c.covA*100).toFixed(0)+'% rumo à meta de '+(c.covM*100).toFixed(0)+'% com busca ativa e autocoleta.',
+    'Detectar ~'+fmt(x.les)+' lesões de alto grau (das quais ~'+fmt(x.lesC)+' invisíveis à citologia).',
+    'Garantir seguimento das positivas e evitar ~'+fmt(x.casos)+' cânceres por tratamento precoce.'],ML,CW,y);
+
+  // ---------- 06 · A solução ----------
+  doc.addPage(); y=chrome('04','A solução','Autoteste de DNA-HPV por autocoleta');
+  bullets(['Sensibilidade de 90–95% — superior à citologia; genotipagem 16/18 e demais de alto risco.',
+    'Autocoleta sem espéculo: aceitação próxima de 100%, feita em UBS, UPA e ações itinerantes.',
+    'Homologado pela ANVISA · SIGTAP 0202100251 · Portaria SECTICS/MS nº 3/2024 — custeável pelo SUS.',
+    'Rastreio a cada 5 anos após resultado negativo, com reconvocação monitorada por IA.'],ML,CW/2-10,y+6);
+  bullets(['Triagem reflexa: citologia só nas HPV+, evitando encaminhar todas à colposcopia.',
+    'Seguimento garantido: colposcopia, biópsia e EZT na rede (pactuado em CIR/PPI).',
+    'Navegação de pacientes: a mulher não se perde entre o teste e o tratamento.',
+    'Custo do kit: '+fmtMoney(x.preco)+' — ante dezenas de milhares no tratamento oncológico tardio.'],ML+CW/2+10,CW/2-10,y+6);
+
+  // ---------- 07 · Metodologia ----------
+  doc.addPage(); y=chrome('05','Metodologia','A jornada da mulher, da convocação ao tratamento');
+  const jornada=['Busca ativa / convocação — ACS e Atenção Primária priorizam quem nunca se rastreou.',
+    'Autocoleta — pontos fixos e itinerantes, sem espéculo; insumos e EPI.',
+    'Teste DNA-HPV com genotipagem — laudo em até 48h no laboratório executante.',
+    'Triagem reflexa — citologia nas HPV+; só as alteradas vão à colposcopia.',
+    'Laudo e devolutiva — negativo reconvocado em 5 anos; registro na linha de cuidado.',
+    'Seguimento e tratamento — colposcopia, biópsia e EZT/conização na referência.'];
+  doc.setFontSize(10.3);
+  jornada.forEach((t,i)=>{ const col=i<3?ML:ML+CW/2+10,row=i%3,yy=y+row*58;
+    F(pink);doc.circle(col+8,yy-3,9,'F');T(white);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(String(i+1),col+8,yy,{align:'center'});
+    T(dark);doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text(doc.splitTextToSize(t,CW/2-40),col+26,yy-4); });
+
+  // ---------- 08 · Dimensionamento ----------
+  doc.addPage(); y=chrome('06','Dimensionamento e alcance','O funil, da população ao resultado');
+  doc.autoTable({startY:y,margin:{left:ML,right:MR},theme:'grid',
+    head:[['Etapa','Volume','Significado']],
+    headStyles:{fillColor:C_WINE,textColor:255,fontSize:10},styles:{fontSize:9.4,cellPadding:5,lineColor:[240,215,230]},
+    columnStyles:{0:{fontStyle:'bold',textColor:C_WINE,cellWidth:210},1:{halign:'right',cellWidth:120}},
+    body:[['População-alvo (25–64)',fmt(x.pop),'mulheres do '+(m[4]?'estado':'município')+' (IBGE 2022)'],
+      ['Mulheres convocadas','~'+fmt(x.conv),'busca ativa — ainda sem rastreio'],
+      ['Mulheres testadas',fmt(x.testes),'adesão '+(c.ades*100).toFixed(0)+'% — realizam a autocoleta'],
+      ['HPV de alto risco +','~'+fmt(x.hpv),'seguem para colposcopia'],
+      ['Lesões NIC2+','~'+fmt(x.les),'~'+fmt(x.lesC)+' que o Papanicolau perderia'],
+      ['Cânceres evitados','~'+fmt(x.casos),'por tratamento precoce']]});
+
+  // ---------- 09 · Investimento ----------
+  doc.addPage(); y=chrome('07','Investimento','Quanto custa e o que entrega');
+  F(wine);doc.roundedRect(ML,y,CW,70,8,8,'F');T(white);doc.setFont('helvetica','bold');doc.setFontSize(26);
+  doc.text(fmtMoney(x.receita),ML+18,y+44);T([255,205,230]);doc.setFont('helvetica','normal');doc.setFontSize(11);
+  doc.text(fmt(x.testes)+' kits × '+fmtMoney(x.preco)+' · fonte: '+x.fonte,ML+18,y+60);y+=86;
+  y=tiles(y,[{k:'Custo por mulher testada',v:fmtMoney(x.preco)},{k:'Custo por câncer evitado',v:fmtMoney(c.custoPorCaso||0),fs:16},
+    {k:'Retorno socioeconômico',v:(c.roiSoc*100).toFixed(0)+'%',a:green},{k:'Economia SUS (CONITEC)',v:'~30%',a:green,s:'vs. citologia, no longo prazo'}],64)+14;
+  para('Desdobramentos na rede (não integram o objeto): citologia reflexa ~'+fmt(x.cito)+' · colposcopia ~'+fmt(x.colp)+' · biópsia ~'+fmt(x.biop)+' · EZT/conização ~'+fmt(x.ezt)+' — financiados por MAC/FAEC/OCI.',y);
+
+  // ---------- 10 · Viabilidade SUS 360 ----------
+  doc.addPage(); y=chrome('08','Viabilidade orçamentária','Programa Agora Tem Especialistas (SUS 360) · '+PATE_COMP);
+  if(R){ y=tiles(y,[{k:'Saldo a comprovar',v:fmtMoney(R.envelope),s:'recurso já no fundo — falta produção'},
+      {k:'Execução comprovada',v:(R.d.pctExecutado||0).toFixed(0)+'%',a:(R.d.pctExecutado>=100?green:pink)},
+      {k:R.semSaldo?'Orçar por':'Ação que cabe no saldo',v:R.semSaldo?'MAC / emenda':fmt(R.acaoTestadas)+' mulheres',a:pink,fs:17},
+      ...(R.saldoEmendas>0?[{k:'Emendas no saldo',v:fmtMoney(R.saldoEmendas)}]:[])],66)+16;
+    y=para(R.semSaldo?'Sem saldo a comprovar nesta competência: a ação é orçada por MAC (produção nova) e/ou emenda, enquadrável no Mutirão das Mulheres.':'O saldo a comprovar financia uma ação de ~'+fmt(R.acaoTestadas)+' mulheres rastreadas, elevando a cobertura de '+(R.covA*100).toFixed(0)+'% para ~'+(R.covB*100).toFixed(0)+'%. O seguimento das HPV+ consome esse recurso já antecipado, cumpre o encontro de contas do PATE (NT 33/2026) e evita a glosa por não-produção.',y);
+    T(pink);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
+    doc.textWithLink('🔗 Conferir na fonte oficial — painel Saldo do Gestor (SUS 360)',ML,y+6,{url:x.painel});
+    if(R.saldoEmendas>0){ doc.textWithLink('🔎 Ver as emendas deste gestor — Portal da Transparência',ML,y+24,{url:R.emendaURL}); }
+  } else { para('Nesta competência, '+x.alvo+' não aparece como gestor com recurso próprio de especializada no SUS 360. A atenção especializada pode ser executada pela gestão estadual; o seguimento das HPV+ é pactuado na CIR/PPI.',y); }
+
+  // ---------- 11 · Contratação e decisão ----------
+  doc.addPage(); y=chrome('09','Contratação e decisão','Caminhos já instruídos e o que se pede ao gestor');
+  T(wine);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('LEI Nº 13.019/2014 — Parceria (MROSC)',ML,y);
+  T(wine);doc.text('LEI Nº 14.133/2021 — Contratação pública',ML+CW/2+10,y);y+=8;
+  bullets(['Termo de colaboração + plano de trabalho (minutados).','Mobilização, logística dos kits e navegação pela OSC.','Pagamento pelo serviço efetivamente prestado.'],ML,CW/2-10,y+12);
+  bullets(['Pregão eletrônico ou registro de preços.','ETP e termo de referência prontos.','Medição mensal pela produção entregue.'],ML+CW/2+10,CW/2-10,y+12);
+  y+=104;T(wine);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('A DECISÃO — TRÊS ATOS DO GESTOR',ML,y);y+=8;
+  tiles(y,[{k:'1 · Autorizar',v:'abrir o processo',fs:13},{k:'2 · Validar',v:'base e fonte do recurso',fs:13},{k:'3 · Pactuar',v:'seguimento em CIR/PPI',fs:13}],52);
+
+  // ---------- 12 · Encerramento (última página · LP link) ----------
+  doc.addPage(); F(wine);doc.rect(0,0,W,H,'F');F(pink);doc.rect(0,0,W,7,'F');
+  T([255,205,230]);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('PROPONENTE E BASE DOCUMENTAL',ML,118);
+  T(white);doc.setFontSize(30);doc.text('Rastrear hoje é evitar o câncer amanhã.',ML,166);
+  T([255,205,230]);doc.setFont('helvetica','normal');doc.setFontSize(13);
+  doc.text(doc.splitTextToSize('PinkPapa · PinkLab — execução técnica do mutirão: mobilização, autocoleta, laboratório e navegação de pacientes, com a plataforma de monitoramento.',CW-120),ML,206);
+  const base=[['BASE LEGAL','ANVISA · SIGTAP 0202100251 · Portaria SECTICS/MS nº 3/2024 · PCDT/INCA'],
+    ['DIMENSIONAMENTO','Manual DNA-HPV (INCA/MS) · IBGE Censo 2022 · SUS 360 (PATE)'],
+    ['REFERÊNCIA',ref]];
+  let by=300; base.forEach(([k,v])=>{ T([255,170,210]);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text(k,ML,by);
+    T(white);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(doc.splitTextToSize(v,CW),ML,by+15);by+=46; });
+  F(pink);doc.roundedRect(ML,H-72,230,34,8,8,'F');T(white);doc.setFont('helvetica','bold');doc.setFontSize(13);
+  doc.textWithLink('🌐 '+LP,ML+16,H-50,{url:LPU});
+  T([255,205,230]);doc.setFontSize(9);doc.text('Saiba mais e acompanhe o projeto',ML+16,H-26);
+  return doc;
+}
+function baixarApresentacao(){ if(!_reqCalc()) return; const {jsPDF}=window.jspdf;
+  const d=new jsPDF({unit:'pt',format:'a4',orientation:'landscape'}); genApresentacao(d,lastCalc);
+  d.save('Apresentacao_PinkPapa_'+_mun()+'.pdf'); }
 
 /* ===== documentos técnicos (proposta técnica + nota técnica) em PDF ===== */
 /* Proposta Técnica e Nota Técnica: formato de texto padrão (Times, cab. 12 / corpo 11, justificado).
