@@ -1210,7 +1210,7 @@ function genApresentacao(doc,c){
   doc.addPage(); y=chrome('01','Apresentação','O projeto em uma página');
   y=tiles(y,[{k:'Objeto',v:'Mutirão DNA-HPV',s:'autocoleta + busca ativa + seguimento',fs:15},
     {k:'Público',v:fmt(x.pop),s:'mulheres de 25–64 anos',fs:18},
-    {k:'Meta de cobertura',v:(c.covA*100).toFixed(0)+'%→'+(c.covM*100).toFixed(0)+'%',a:green,fs:16,s:'no alvo da OMS (70%)'},
+    {k:'Meta de cobertura',v:(c.covA*100).toFixed(0)+'% a '+(c.covM*100).toFixed(0)+'%',a:green,fs:16,s:'no alvo da OMS (70%)'},
     {k:'Prazo',v:(c.prazo||12)+' meses',fs:17,s:'implantação em lotes'}],70)+18;
   y=para('O rastreio por autocoleta de DNA-HPV alcança as mulheres que nunca se rastrearam e entrega maior sensibilidade que a citologia. O projeto convoca ~'+fmt(x.conv)+' mulheres, realiza '+fmt(x.testes)+' testes e garante o seguimento das positivas (colposcopia, biópsia e tratamento), estruturando a linha de cuidado e alinhando '+x.alvo+' às metas 90-70-90.',y);
 
@@ -1287,8 +1287,8 @@ function genApresentacao(doc,c){
       ...(R.saldoEmendas>0?[{k:'Emendas no saldo',v:fmtMoney(R.saldoEmendas)}]:[])],66)+16;
     y=para(R.semSaldo?'Sem saldo a comprovar nesta competência: a ação é orçada por MAC (produção nova) e/ou emenda, enquadrável no Mutirão das Mulheres.':'O saldo a comprovar financia uma ação de ~'+fmt(R.acaoTestadas)+' mulheres rastreadas, elevando a cobertura de '+(R.covA*100).toFixed(0)+'% para ~'+(R.covB*100).toFixed(0)+'%. O seguimento das HPV+ consome esse recurso já antecipado, cumpre o encontro de contas do PATE (NT 33/2026) e evita a glosa por não-produção.',y);
     T(pink);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
-    doc.textWithLink('🔗 Conferir na fonte oficial — painel Saldo do Gestor (SUS 360)',ML,y+6,{url:x.painel});
-    if(R.saldoEmendas>0){ doc.textWithLink('🔎 Ver as emendas deste gestor — Portal da Transparência',ML,y+24,{url:R.emendaURL}); }
+    doc.textWithLink('Conferir na fonte oficial — painel Saldo do Gestor (SUS 360) >',ML,y+6,{url:x.painel});
+    if(R.saldoEmendas>0){ doc.textWithLink('Ver as emendas deste gestor — Portal da Transparência >',ML,y+24,{url:R.emendaURL}); }
   } else { para('Nesta competência, '+x.alvo+' não aparece como gestor com recurso próprio de especializada no SUS 360. A atenção especializada pode ser executada pela gestão estadual; o seguimento das HPV+ é pactuado na CIR/PPI.',y); }
 
   // ---------- 11 · Contratação e decisão ----------
@@ -1312,7 +1312,7 @@ function genApresentacao(doc,c){
   let by=300; base.forEach(([k,v])=>{ T([255,170,210]);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text(k,ML,by);
     T(white);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(doc.splitTextToSize(v,CW),ML,by+15);by+=46; });
   F(pink);doc.roundedRect(ML,H-72,230,34,8,8,'F');T(white);doc.setFont('helvetica','bold');doc.setFontSize(13);
-  doc.textWithLink('🌐 '+LP,ML+16,H-50,{url:LPU});
+  doc.textWithLink(LP,ML+16,H-50,{url:LPU});
   T([255,205,230]);doc.setFontSize(9);doc.text('Saiba mais e acompanhe o projeto',ML+16,H-26);
   return doc;
 }
