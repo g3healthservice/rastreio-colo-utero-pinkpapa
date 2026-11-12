@@ -1157,12 +1157,13 @@ function baixarPDF(){const r=montarPDF();if(r) r.doc.save(nomeArq());}
 function genApresentacao(doc,c){
   const x=_ctx(c), R=x.recon, m=c.muni;
   const W=595,H=842,ML=44,MR=44,CW=W-ML-MR;
-  const NAVY=[27,35,68], ORANGE=[221,90,30], GREY=[108,114,130], WHITE=[255,255,255],
+  // identidade PinkPapa: NAVY=vinho (--wine), ORANGE=rosa (--pink)
+  const NAVY=[124,29,79], ORANGE=[230,0,126], GREY=[108,114,130], WHITE=[255,255,255],
         TEAL=[18,150,120], BLUE=[46,86,196], PURPLE=[150,60,160], PAGE=[242,243,247],
         LINE=[223,227,235], PEACH=[253,232,217], LAV=[228,228,247], MINT=[223,242,233];
   const hoje=new Date(), ymd=hoje.toISOString().slice(0,10).replace(/-/g,'');
   const ref='PP-DNAHPV-'+(m[5]||m[1]||'')+'-'+ymd, LP='lp.tealliance.com.br', LPU='https://lp.tealliance.com.br/';
-  const HEAD='PROJETO RASTREIO DNA-HPV', FOOT='TEAlliance · Inclusi.Via · Documento de apoio à decisão do gestor';
+  const HEAD='PROJETO RASTREIO DNA-HPV', FOOT='PinkPapa · PinkLab · Documento de apoio à decisão do gestor';
   const T=a=>doc.setTextColor(a[0],a[1],a[2]), F=a=>doc.setFillColor(a[0],a[1],a[2]), D=a=>doc.setDrawColor(a[0],a[1],a[2]);
   const sp=(t,w)=>doc.splitTextToSize(t,w);
   let pg=1;
@@ -1191,21 +1192,21 @@ function genApresentacao(doc,c){
 
   // ---------------- CAPA ----------------
   F(NAVY); doc.rect(0,0,W,H,'F');
-  F([35,44,82]); doc.circle(W-40,150,190,'F'); F([46,36,72]); doc.circle(W-10,150,120,'F');
+  F([150,34,96]); doc.circle(W-40,150,190,'F'); F([92,20,60]); doc.circle(W-10,150,120,'F');
   // logo card (wordmark — sem o logotipo original)
-  F(WHITE); doc.roundedRect(ML,60,170,86,10,10,'F'); T(NAVY); doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.text('TEAlliance',ML+16,104);
-  T(ORANGE); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text('Inclusi.Via',ML+18,122);
+  F(WHITE); doc.roundedRect(ML,60,170,86,10,10,'F'); T(NAVY); doc.setFont('helvetica','bold'); doc.setFontSize(24); doc.text('PinkPapa',ML+16,104);
+  T(ORANGE); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text('PinkLab · G3 Health Service',ML+17,122);
   // orange title band
-  F(ORANGE); doc.rect(0,430,W*0.86,150,'F'); T(WHITE); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.text('PROJETO TÉCNICO  ·  '+hoje.getFullYear(),ML,466);
-  doc.setFontSize(30); doc.text(sp('Rastreio de câncer do colo do útero',W*0.86-ML-16),ML,502);
-  doc.setFont('helvetica','normal'); doc.setFontSize(12.5); T([255,232,220]); doc.text(sp('DNA-HPV por autocoleta · mutirão com busca ativa e seguimento garantido',W*0.86-ML-16),ML,548);
+  F(ORANGE); doc.rect(0,426,W*0.88,176,'F'); T(WHITE); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.text('PROJETO TÉCNICO  ·  '+hoje.getFullYear(),ML,462);
+  doc.setFontSize(30); doc.text(sp('Rastreio de câncer do colo do útero',W*0.88-ML-16),ML,498);
+  doc.setFont('helvetica','normal'); doc.setFontSize(12); T(WHITE); doc.text(sp('DNA-HPV por autocoleta · mutirão com busca ativa e seguimento garantido',W*0.88-ML-16),ML,562);
   // meta 2x2
   const meta=[['PREPARADO PARA',x.orgao],['PROPONENTE','PinkPapa · PinkLab'],
     ['LOCAL E ALCANCE',x.alvo+' · '+fmt(x.pop)+' mulheres 25–64'],['DATA E REFERÊNCIA',dataExtenso(hoje)+' · '+ref]];
   meta.forEach((mm,i)=>{ const col=ML+(i%2)*(CW/2+6), row=640+Math.floor(i/2)*78;
     F(ORANGE); doc.rect(col,row,3,42,'F'); T([170,176,196]); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text(mm[0],col+12,row+10);
     T(WHITE); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text(sp(mm[1],CW/2-24),col+12,row+26); });
-  T([255,210,185]); doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.textWithLink(LP,ML,H-34,{url:LPU});
+  T([255,205,230]); doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.textWithLink(LP,ML,H-34,{url:LPU});
 
   // ---------------- SUMÁRIO ----------------
   doc.addPage(); pg++; bg(); top();
@@ -1404,8 +1405,8 @@ function genApresentacao(doc,c){
      F(i%2?ORANGE:NAVY);doc.rect(tx+10,ry+10,12,15,'F');T(NAVY);doc.setFont('helvetica','bold');doc.setFontSize(8.2);doc.text(sp(d2,w-32),tx+28,ry+20); }); y+=108;
   foot('Fontes: IBGE (Censo 2022) · INCA/MS (Manual DNA-HPV) · SUS 360 (PATE) · CONITEC · Portal da Transparência. Valores sujeitos a pesquisa de preços (Lei 14.133/2021).');
   const py=H-150;
-  F(NAVY);doc.roundedRect(ML,py,CW,46,8,8,'F');T(WHITE);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('TEAlliance — Inclusi.Via',ML+16,py+20);
-  doc.setFont('helvetica','normal');doc.setFontSize(9);T([255,210,185]);doc.textWithLink(LP,ML+16,py+36,{url:LPU});T([190,195,214]);doc.text('   ·   contato@tealliance.com.br   ·   Ref. '+ref,ML+16+doc.getTextWidth(LP),py+36);
+  F(NAVY);doc.roundedRect(ML,py,CW,46,8,8,'F');T(WHITE);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('PinkPapa · PinkLab',ML+16,py+20);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);T([255,205,230]);doc.textWithLink(LP,ML+16,py+36,{url:LPU});T([228,200,216]);doc.text('   ·   contato@pinkpapa.com.br   ·   Ref. '+ref,ML+16+doc.getTextWidth(LP),py+36);
   return doc;
 }
 function baixarApresentacao(){ if(!_reqCalc()) return; const {jsPDF}=window.jspdf;
