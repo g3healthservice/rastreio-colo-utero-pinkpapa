@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Projeto PinkPapa · Ribeirão Preto</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* Documento técnico impresso (14 páginas). Paleta e tipografia idênticas ao deck Inclusi.Via/TEA, conteúdo PinkPapa. Tema único claro (é uma proposta impressa). */
+:root{
+  --navy:#14225A; --navy2:#1F2E73; --ink:#172045; --muted:#59618A; --faint:#8A90AE;
+  --bg:#EEF0F6; --card:#FFFFFF; --line:#E2E5F0; --soft:#EEF0F8;
+  --orange:#E0651A; --orange-l:#FDEBDD; --purple:#6A3FA0; --purple-l:#EFE8F8;
+  --teal:#0E9488; --teal-l:#DDF3F0; --blue:#3A4FA8; --blue-l:#E4E8F7;
+  --red:#B42318; --green:#0F7B55;
+  --c1:#3A4FA8; --c2:#E0651A; --c3:#8A5CC4; --c4:#0E9488; --cgray:#D3D7E5;
+  --r:14px; --sh:0 1px 2px rgba(20,34,90,.06),0 10px 30px rgba(20,34,90,.09);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.5 "Inter","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 44px}
+.deck{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.tnum{font-variant-numeric:tabular-nums}
+b,strong{font-weight:650}
+
+/* banner de validação */
+.valbar{max-width:880px;margin:0 auto 20px;background:#FFF6EE;border:1px solid #F2C9A6;border-left:4px solid var(--orange);
+  border-radius:12px;padding:12px 16px;font-size:13px;color:#8A4A1C}
+.valbar b{color:#A8470C}
+
+/* página */
+.pg{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);
+  padding:32px 38px 26px;position:relative;display:flex;flex-direction:column;min-height:560px}
+.pg-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:18px}
+.pg-hd .t{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--navy)}
+.pg-hd .t span{display:block;color:var(--muted);font-weight:600;letter-spacing:.04em;margin-top:3px;font-size:10px;text-transform:none}
+.pg-hd .src{font-size:10px;color:var(--faint);text-align:right;line-height:1.5}
+.sec-h{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
+.sec-h .no{font-size:30px;font-weight:800;color:var(--orange);letter-spacing:-.02em;line-height:1}
+.sec-h h2{font-size:23px;font-weight:750;color:var(--navy);letter-spacing:-.015em;margin:0}
+.sec-sub{font-size:13px;color:var(--muted);margin:0 0 20px 44px}
+.pg-ft{margin-top:auto;padding-top:16px;display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--line);font-size:10.5px;color:var(--faint)}
+.pg-ft .n{font-weight:700;color:var(--muted)}
+
+/* componentes */
+.lead{font-size:14.5px;color:var(--ink);max-width:70ch;margin:0 0 16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+.stat b{display:block;font-size:25px;letter-spacing:-.02em;color:var(--navy);line-height:1.05}
+.stat .l{font-size:12.5px;color:var(--ink);margin-top:6px}
+.stat .s{font-size:10.5px;color:var(--faint);margin-top:7px}
+.stat.o b{color:var(--orange)} .stat.p b{color:var(--purple)} .stat.t b{color:var(--teal)} .stat.r b{color:var(--red)}
+.eye{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--orange);margin:0 0 10px}
+.eye.navy{color:var(--navy)} .eye.teal{color:var(--teal)} .eye.purple{color:var(--purple)}
+.callout{border-left:4px solid var(--orange);background:var(--orange-l);padding:13px 15px;border-radius:0 12px 12px 0;font-size:13px;margin-top:16px}
+.callout.blue{border-color:var(--blue);background:var(--blue-l)}
+.callout.teal{border-color:var(--teal);background:var(--teal-l)}
+.callout.purple{border-color:var(--purple);background:var(--purple-l)}
+.note{font-size:11px;color:var(--faint);margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:650;padding:8px 9px;border-bottom:2px solid var(--line)}
+td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.tot td{font-weight:700;border-top:2px solid var(--navy);border-bottom:none;color:var(--navy)}
+tr.grp td{background:var(--soft);font-weight:700;color:var(--navy);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.layers{display:flex;flex-direction:column;gap:10px}
+.layer{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.layer .ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:23px}
+.layer h4{margin:0 0 3px;font-size:14.5px;color:var(--navy)}
+.layer p{margin:0;font-size:12.5px;color:var(--muted)}
+.layer .tg{font-size:12px;font-weight:700;padding:5px 11px;border-radius:99px;white-space:nowrap;color:#fff}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;counter-reset:st}
+.step{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;position:relative}
+.step:before{counter-increment:st;content:counter(st);display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:700;margin-bottom:8px}
+.step b{display:block;color:var(--navy);font-size:13.5px}
+.step span{font-size:12px;color:var(--muted)}
+.chain{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:6px}
+.ch{position:relative;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px}
+.ch i{font-style:normal;display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:var(--orange);color:#fff;font-size:12px;font-weight:700;margin-bottom:8px}
+.ch b{display:block;color:var(--navy);font-size:13px}
+.ch span{font-size:12px;color:var(--muted);display:block;margin-top:2px}
+.ch:not(:last-child):after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--orange);font-weight:800;font-size:16px;z-index:1}
+.funnel{display:flex;flex-direction:column;gap:8px}
+.fr{display:grid;grid-template-columns:minmax(160px,1.2fr) 2fr 86px;gap:12px;align-items:center;font-size:12.5px}
+.fr .k small{display:block;color:var(--faint);font-size:10.5px}
+.fr .bar{height:26px;background:var(--soft);border-radius:6px;overflow:hidden}
+.fr .bar i{display:block;height:100%;border-radius:6px 4px 4px 6px;background:var(--c1)}
+.fr .v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy)}
+.tree{display:grid;grid-template-columns:1fr;gap:10px}
+.tbox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.tbox.prob{border-color:#F2C9A6;background:#FFFBF7}
+.tbox .tl{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--orange);margin-bottom:6px}
+.tbox.prob .tl{color:#A8470C}
+.tbox ul{margin:0;padding-left:16px} .tbox li{font-size:12.5px;margin:3px 0;color:var(--ink)}
+.ente{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;background:linear-gradient(120deg,var(--navy),#2B3A86);color:#fff;border-radius:var(--r);padding:16px 20px;margin:4px 0 16px}
+.ente .nm{font-size:21px;font-weight:700} .ente .mt{font-size:12px;color:#C9CFEA;margin-top:2px}
+.ente .vv{text-align:right} .ente .vv b{font-size:21px;display:block} .ente .vv span{font-size:11px;color:#C9CFEA}
+.big{background:linear-gradient(125deg,#101B4C,#2A2F7A);color:#fff;border-radius:var(--r);padding:22px;position:relative;overflow:hidden}
+.big:after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#E0651A 0%,rgba(224,101,26,0) 70%);opacity:.55}
+.big .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#F6A868;font-weight:700}
+.big .v{font-size:38px;font-weight:800;letter-spacing:-.02em;margin:6px 0}
+.big .d{font-size:13px;color:#C9CFEA}
+.big .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;position:relative;z-index:1}
+.big .mini div{background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px}
+.big .mini b{display:block;font-size:16px} .big .mini span{font-size:11px;color:#C9CFEA}
+ul.clean{padding-left:18px;margin:6px 0} ul.clean li{margin:5px 0;font-size:13px}
+
+/* capa */
+.cover{background:linear-gradient(125deg,#101B4C 0%,#1C2A6E 55%,#3B2B7E 100%);color:#fff;border-radius:var(--r);
+  padding:46px 40px 36px;position:relative;overflow:hidden;box-shadow:var(--sh)}
+.cover:after{content:"";position:absolute;right:-120px;bottom:-170px;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#F28A3C,#E0651A 55%,rgba(224,101,26,0) 72%);opacity:.9}
+.cover .inner{position:relative;z-index:1}
+.cover .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#F6A868}
+.cover h1{font-size:clamp(28px,4.4vw,42px);line-height:1.08;letter-spacing:-.02em;margin:12px 0 10px;max-width:16ch}
+.cover h1 em{font-style:normal;color:#F6A868}
+.cover .sub{font-size:15px;color:#D6DBF2;max-width:52ch;margin:0 0 26px}
+.cover .meta{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 28px;max-width:640px}
+.cover .meta .k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#F6A868;font-weight:700;margin-bottom:3px}
+.cover .meta .d{font-size:13.5px;color:#EEF1FB;line-height:1.45}
+.cover .foot{margin-top:26px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:12px;color:#C9CFEA;position:relative;z-index:1}
+.cover .foot a{color:#F6A868;text-decoration:none;font-weight:600}
+.cover .ref{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+.cover .motif{position:absolute;top:28px;right:34px;width:132px;height:132px;opacity:.92;z-index:1}
+.illusband{margin:2px 0 18px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#FBFCFF,#F3F6FC);padding:12px 10px 10px}
+.illusband svg{display:block}
+.figcap{font-size:10.5px;color:var(--faint);text-align:center;margin-top:4px}
+@media (max-width:720px){
+  .cover .motif{width:92px;height:92px;top:18px;right:18px}
+  .pg{padding:24px 20px 20px}
+  .grid4,.grid3,.grid2,.steps,.chain{grid-template-columns:1fr 1fr}
+  .cover .meta{grid-template-columns:1fr}
+  .fr{grid-template-columns:1fr 1.3fr 70px}
+  .sec-sub{margin-left:0}
+}
+@media (max-width:460px){ .grid4,.grid3,.chain{grid-template-columns:1fr} .sec-h .no{font-size:24px} .sec-h h2{font-size:19px} }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 01 CAPA -->
+<div class="cover">
+  <svg class="motif" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="44" cy="44" r="23" stroke="#F6A868" stroke-width="2.6"/>
+    <circle cx="44" cy="44" r="10" stroke="#FFD9B0" stroke-width="2"/>
+    <line x1="61" y1="61" x2="86" y2="86" stroke="#F6A868" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="94" cy="94" r="6" fill="#F28A3C"/>
+    <circle cx="34" cy="38" r="2.6" fill="#FFD9B0"/><circle cx="50" cy="48" r="3.2" fill="#FFD9B0"/><circle cx="40" cy="52" r="2.2" fill="#FFD9B0"/>
+    <path d="M80 30 l5 5 10-12" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+  </svg>
+  <div class="inner">
+  <div class="eyebrow">Projeto técnico · 2026</div>
+  <h1>Rastreio organizado de <em>câncer de colo do útero</em></h1>
+  <div class="sub">Teste de DNA-HPV com autocoleta para mulheres de 25 a 64 anos na rede municipal de saúde</div>
+  <div class="meta">
+    <div><div class="k">Preparado para</div><div class="d">Prefeitura Municipal de Ribeirão Preto<br>Secretaria Municipal da Saúde</div></div>
+    <div><div class="k">Proponente</div><div class="d">PinkLab<br>contato@pinklabsaude.com</div></div>
+    <div><div class="k">Local de realização</div><div class="d">Ribeirão Preto/SP<br>Rede municipal de atenção à saúde</div></div>
+    <div><div class="k">Data e referência</div><div class="d">novembro de 2026<br><span class="ref">PP-COLO-3543402-202611</span></div></div>
+  </div>
+  <div class="foot"><a href="https://pinklabsaude.com" target="_blank" rel="noopener">pinklabsaude.com</a><span>SIGTAP 0202100251 · Portaria SECTICS/MS nº 3/2024 (CONITEC)</span></div>
+</div></div>
+
+<!-- 02 SUMÁRIO -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><h2>Sumário</h2></div>
+  <p class="sec-sub" style="margin-left:0">Doze seções, cada uma responde a uma pergunta do gestor</p>
+  <table>
+    <tr><td class="n" style="color:var(--orange);font-weight:700;width:34px">01</td><td><b>Apresentação</b></td><td style="color:var(--muted)">O projeto em uma página</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">02</td><td><b>Realidade e problema</b></td><td style="color:var(--muted)">O que falta no rastreio hoje</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">03</td><td><b>Público-alvo e objetivos</b></td><td style="color:var(--muted)">Para quem e para quê</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">04</td><td><b>Justificativa</b></td><td style="color:var(--muted)">O dever legal e a meta do Previne</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">05</td><td><b>Descrição do projeto</b></td><td style="color:var(--muted)">Três camadas de serviço</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">06</td><td><b>Metodologia</b></td><td style="color:var(--muted)">A jornada da mulher</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">07</td><td><b>Plano de trabalho e cronograma</b></td><td style="color:var(--muted)">Metas, lotes e prazos</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">08</td><td><b>Metas e indicadores</b></td><td style="color:var(--muted)">Como o resultado é medido</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">09</td><td><b>Recursos e fontes</b></td><td style="color:var(--muted)">Quanto custa e de onde vem</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">10</td><td><b>Monitoramento e riscos</b></td><td style="color:var(--muted)">Como se acompanha e se previne</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">11</td><td><b>Contratação e decisão</b></td><td style="color:var(--muted)">Caminhos legais e o que se pede</td></tr>
+    <tr><td class="n" style="color:var(--orange);font-weight:700">12</td><td><b>Proponente e base documental</b></td><td style="color:var(--muted)">Quem faz e o que sustenta</td></tr>
+  </table>
+  <div class="grid3" style="margin-top:20px">
+    <div class="stat"><b class="tnum">210.612</b><div class="l">mulheres de 25 a 64 anos</div><div class="s">população-alvo (IBGE, Censo 2022)</div></div>
+    <div class="stat o"><b class="tnum">27,84%</b><div class="l">cobertura de rastreio atual</div><div class="s">SISCAN, triênio 2022–2024</div></div>
+    <div class="stat r"><b class="tnum">17.010</b><div class="l">casos novos/ano no Brasil</div><div class="s">INCA — câncer de colo do útero</div></div>
+  </div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">02</span></div>
+</div>
+
+<!-- 03 APRESENTAÇÃO -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div><div class="src">Fontes: IBGE 2022 · SISCAN · INCA</div></div>
+  <div class="sec-h"><span class="no">01</span><h2>Apresentação</h2></div>
+  <p class="sec-sub">O projeto em uma página</p>
+  <p class="lead">Ribeirão Preto tem <b>210.612 mulheres de 25 a 64 anos</b>, a faixa do rastreio de câncer de colo do útero, e apenas <b>27,84%</b> delas foram rastreadas no último triênio (SISCAN 2022–2024). O rastreio ainda é oportunístico e feito por Papanicolau, cuja sensibilidade para lesões de alto grau é de 55–70% — uma em cada sete mulheres com citologia normal já tinha lesão não detectada (estudo ATHENA). Não há busca ativa organizada nem garantia de seguimento das positivas.</p>
+  <p class="lead">Este projeto propõe um <b>serviço de rastreio organizado por teste de DNA-HPV com autocoleta</b>, com a plataforma PinkPapa acoplada, que convoca a população-alvo, realiza a coleta sem espéculo em UBS e na comunidade, processa o exame molecular em laboratório e garante o seguimento (colposcopia e tratamento) de cada resultado positivo, com indicadores de cobertura e desfecho.</p>
+  <div class="grid3" style="margin-top:4px">
+    <div class="stat"><div class="eye navy">Objeto</div><div class="l" style="margin-top:2px">Serviço de rastreio organizado de colo do útero (DNA-HPV, autocoleta), com plataforma e seguimento</div></div>
+    <div class="stat"><div class="eye navy">Público</div><div class="l" style="margin-top:2px">210.612 mulheres de 25 a 64 anos da rede municipal</div></div>
+    <div class="stat"><div class="eye navy">Entrega</div><div class="l" style="margin-top:2px">Convocação, autocoleta, exame, laudo e seguimento garantido das positivas</div></div>
+  </div>
+  <div class="callout teal">O DNA-HPV tem sensibilidade de 90–95% para lesões NIC2+ e valor preditivo negativo de 98–99%, o que permite espaçar o rastreio para 5 anos após resultado negativo — mais proteção, menos exames repetidos.</div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">03</span></div>
+</div>
+
+<!-- 04 REALIDADE E PROBLEMA -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div><div class="src">Fontes: SISCAN · INCA · Diretrizes MS</div></div>
+  <div class="sec-h"><span class="no">02</span><h2>Realidade e problema</h2></div>
+  <p class="sec-sub">O que falta no rastreio hoje</p>
+  <div class="eye">O contexto local</div>
+  <div class="grid4">
+    <div class="stat"><b class="tnum">210.612</b><div class="l">mulheres 25–64 anos</div><div class="s">população-alvo do rastreio</div></div>
+    <div class="stat o"><b class="tnum">27,84%</b><div class="l">cobertura de rastreio</div><div class="s">SISCAN, triênio 2022–2024</div></div>
+    <div class="stat r"><b class="tnum">~152 mil</b><div class="l">mulheres sem rastreio recente</div><div class="s">72% da população-alvo</div></div>
+    <div class="stat"><b class="tnum">4 a 6 meses</b><div class="l">de espera no agendamento</div><div class="s">rastreio ainda oportunístico</div></div>
+  </div>
+  <div class="illusband" style="display:flex;align-items:center;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:18px">
+    <svg viewBox="0 0 120 120" width="112" height="112" aria-hidden="true">
+      <circle cx="60" cy="60" r="46" fill="none" stroke="#E7EAF3" stroke-width="15"/>
+      <circle cx="60" cy="60" r="46" fill="none" stroke="#E0651A" stroke-width="15" stroke-linecap="round" stroke-dasharray="80.5 289" transform="rotate(-90 60 60)"/>
+      <text x="60" y="58" text-anchor="middle" font-family="Inter,sans-serif" font-size="21" font-weight="800" fill="#14225A">27,84%</text>
+      <text x="60" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="#59618A">rastreadas</text>
+    </svg>
+    <div style="max-width:320px;font-size:12.5px;color:var(--muted)">Apenas <b style="color:var(--navy)">27,84%</b> das mulheres de 25–64 anos foram rastreadas no último triênio. <b style="color:var(--orange)">Cerca de 72%</b> — ~152 mil mulheres — seguem sem rastreio recente.</div>
+  </div>
+  <div class="eye" style="margin-top:22px">A árvore do problema</div>
+  <div class="tree">
+    <div class="tbox prob"><div class="tl">Problema central</div><div style="font-size:13.5px;color:var(--navy);font-weight:600">Rastreio oportunístico, sem busca ativa e sem seguimento garantido das positivas</div></div>
+    <div class="tbox"><div class="tl">Causas</div><ul>
+      <li>Papanicolau com sensibilidade de 55–70% — perde 1 em cada 7 lesões de alto grau</li>
+      <li>Convocação passiva: a mulher precisa procurar a UBS</li>
+      <li>Resultado positivo nem sempre chega à colposcopia e ao tratamento</li></ul></div>
+    <div class="tbox"><div class="tl">Consequências</div><ul>
+      <li>Diagnóstico tardio, quando o tratamento já é oncológico e caro</li>
+      <li>Indicador de citopatológico do Previne Brasil abaixo da meta — perda de recurso do PAP</li>
+      <li>Óbitos evitáveis por um câncer quase 100% prevenível</li></ul></div>
+  </div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">04</span></div>
+</div>
+
+<!-- 05 PÚBLICO-ALVO E OBJETIVOS -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div><div class="src">Modelo PinkPapa · premissas ajustáveis</div></div>
+  <div class="sec-h"><span class="no">03</span><h2>Público-alvo e objetivos</h2></div>
+  <p class="sec-sub">Para quem e para quê — do universo ao desfecho</p>
+  <div class="eye">Do universo ao atendimento</div>
+  <div class="funnel">
+    <div class="fr"><div class="k">População-alvo<small>mulheres 25–64 (IBGE 2022)</small></div><div class="bar"><i style="width:100%"></i></div><div class="v">210.612</div></div>
+    <div class="fr"><div class="k">Convocadas (busca ativa)<small>para subir de 28% a 70% de cobertura</small></div><div class="bar"><i style="width:42%"></i></div><div class="v">88.794</div></div>
+    <div class="fr"><div class="k">Testadas (autocoleta)<small>adesão de 80% das convocadas</small></div><div class="bar"><i style="width:34%;background:var(--c4)"></i></div><div class="v">71.035</div></div>
+    <div class="fr"><div class="k">HPV de alto risco +<small>10% das testadas → colposcopia</small></div><div class="bar"><i style="width:9%;background:var(--c2)"></i></div><div class="v">7.104</div></div>
+    <div class="fr"><div class="k">Lesões NIC2+ detectadas<small>298 que o Papanicolau perderia</small></div><div class="bar"><i style="width:4%;background:var(--c3)"></i></div><div class="v">852</div></div>
+    <div class="fr"><div class="k">Casos de câncer evitados<small>por tratamento precoce da lesão</small></div><div class="bar"><i style="width:3%;background:var(--red)"></i></div><div class="v">128</div></div>
+  </div>
+  <div class="eye" style="margin-top:20px">Objetivo geral</div>
+  <p style="font-size:13.5px;margin:0 0 10px">Elevar a cobertura do rastreio de colo do útero de 28% para 70% da população-alvo, substituindo o Papanicolau oportunístico pelo DNA-HPV organizado, com seguimento garantido de cada resultado positivo.</p>
+  <div class="eye">Objetivos específicos</div>
+  <ul class="clean">
+    <li>Convocar por busca ativa 88.794 mulheres ainda sem rastreio recente.</li>
+    <li>Realizar 71.035 autocoletas de DNA-HPV com a plataforma PinkPapa.</li>
+    <li>Encaminhar 100% das 7.104 HPV+ à colposcopia, com tempo máximo definido.</li>
+    <li>Tratar as 852 lesões NIC2+ detectadas, evitando ~128 casos de câncer invasivo.</li>
+  </ul>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">05</span></div>
+</div>
+
+<!-- 06 JUSTIFICATIVA -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">04</span><h2>Justificativa</h2></div>
+  <p class="sec-sub">O dever legal, a diretriz oficial e a meta do Previne Brasil</p>
+  <p class="lead">O rastreio organizado do câncer de colo do útero é política pactuada e, desde 2024, o DNA-HPV é o método recomendado pelo Ministério da Saúde. O projeto dá ao município o meio de cumprir a diretriz e de recompor o indicador que financia a atenção primária.</p>
+  <div class="eye">O que a norma estabelece</div>
+  <div class="grid2">
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Portaria SECTICS/MS nº 3/2024</div><div class="l">Incorporação do teste de DNA-HPV ao SUS (CONITEC), em substituição ao Papanicolau no rastreio organizado.</div></div>
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Lei nº 14.758/2023</div><div class="l">Política Nacional de Prevenção e Controle do Câncer — rastreamento e diagnóstico precoce como dever do SUS.</div></div>
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Diretrizes INCA/MS 2024</div><div class="l">Rastreamento organizado por DNA-HPV dos 25 aos 64 anos, com intervalo de 5 anos após exame negativo.</div></div>
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Lei nº 8.080/1990</div><div class="l">Integralidade e acesso às ações de prevenção como princípios do Sistema Único de Saúde.</div></div>
+  </div>
+  <div class="callout">
+    <b>A cobrança em curso.</b> A cobertura de citopatológico é indicador de financiamento do <b>Previne Brasil</b>: com 27,84% de rastreio, o município está abaixo da meta e deixa de captar a parcela de desempenho do PAP. O serviço recompõe o indicador e o demonstra com registro auditável.
+  </div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">06</span></div>
+</div>
+
+<!-- 07 DESCRIÇÃO DO PROJETO -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">05</span><h2>Descrição do projeto</h2></div>
+  <p class="sec-sub">Três camadas de serviço em torno de cada mulher</p>
+  <div class="layers">
+    <div class="layer"><div class="ic" style="background:var(--blue-l)">🧪</div>
+      <div><h4>Coleta na ponta — comum, perto da mulher</h4><p>Autocoleta de DNA-HPV em UBS, UPA e na comunidade, sem espéculo e sem mesa ginecológica. Convocação por busca ativa e kit de coleta.</p></div>
+      <div class="tg" style="background:var(--blue)">Rede básica</div></div>
+    <div class="layer"><div class="ic" style="background:var(--purple-l)">🔬</div>
+      <div><h4>Laboratório especializado — o exame molecular</h4><p>Análise molecular por PCR (SIGTAP 0202100251) detectando 28 tipos de HPV, com genotipagem e laudo. É a camada técnica que a ponta não executa.</p></div>
+      <div class="tg" style="background:var(--purple)">Lab PinkLab</div></div>
+    <div class="layer"><div class="ic" style="background:var(--teal-l)">🩺</div>
+      <div><h4>Seguimento garantido — colposcopia e tratamento</h4><p>Toda HPV+ encaminhada à colposcopia; lesões NIC2+ tratadas. Plataforma PinkPapa acompanha cada mulher por até 5 anos, com apoio de IA.</p></div>
+      <div class="tg" style="background:var(--teal)">Média compl.</div></div>
+  </div>
+  <div class="callout purple">A plataforma é o instrumento; o objeto é o serviço de rastreio com seguimento. A natureza combina <b>procedimento comum na ponta</b> (autocoleta) e <b>exame laboratorial especializado</b> (molecular).</div>
+  <div class="eye" style="margin-top:18px">O que não integra o projeto</div>
+  <p style="font-size:12.5px;color:var(--muted);margin:0">Vacinação contra HPV (programa próprio do calendário nacional) e tratamento oncológico de alta complexidade já instalado — o projeto é de rastreio e detecção precoce, encaminhando os casos à rede oncológica existente.</p>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">07</span></div>
+</div>
+
+<!-- 08 METODOLOGIA -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">06</span><h2>Metodologia</h2></div>
+  <p class="sec-sub">A jornada da mulher, da convocação ao seguimento</p>
+  <div class="illusband">
+    <svg viewBox="0 0 760 100" width="100%" height="100" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <line x1="95" y1="40" x2="659" y2="40" stroke="#E2E5F0" stroke-width="2"/>
+      <g fill="#E0651A"><path d="M181 34 l9 6 l-9 6 z"/><path d="M369 34 l9 6 l-9 6 z"/><path d="M557 34 l9 6 l-9 6 z"/></g>
+      <circle cx="95" cy="40" r="23" fill="#FDEBDD" stroke="#E0651A" stroke-width="2"/>
+      <path d="M86 35 L104 31 L104 49 L86 45 Z M86 40 L81 40" stroke="#E0651A" stroke-width="2" fill="none" stroke-linejoin="round"/>
+      <text x="95" y="83" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="650" fill="#14225A">Convocação</text>
+      <circle cx="283" cy="40" r="23" fill="#E4E8F7" stroke="#3A4FA8" stroke-width="2"/>
+      <rect x="277" y="29" width="12" height="22" rx="6" stroke="#3A4FA8" stroke-width="2" fill="none"/>
+      <line x1="274" y1="33" x2="292" y2="33" stroke="#3A4FA8" stroke-width="2"/>
+      <text x="283" y="83" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="650" fill="#14225A">Autocoleta</text>
+      <circle cx="471" cy="40" r="23" fill="#EFE8F8" stroke="#6A3FA0" stroke-width="2"/>
+      <circle cx="467" cy="36" r="6" stroke="#6A3FA0" stroke-width="2" fill="none"/>
+      <line x1="471" y1="40" x2="479" y2="50" stroke="#6A3FA0" stroke-width="2.4" stroke-linecap="round"/>
+      <text x="471" y="83" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="650" fill="#14225A">Laboratório</text>
+      <circle cx="659" cy="40" r="23" fill="#DDF3F0" stroke="#0E9488" stroke-width="2"/>
+      <path d="M650 40 l6 7 l12 -14" stroke="#0E9488" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <text x="659" y="83" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="650" fill="#14225A">Seguimento</text>
+    </svg>
+    <div class="figcap">Da convocação ao seguimento — a mulher acompanhada em cada etapa</div>
+  </div>
+  <div class="steps">
+    <div class="step"><b>Convocação</b><span>Busca ativa da população-alvo por UBS, agentes comunitários e canais digitais, priorizando quem está sem rastreio recente.</span></div>
+    <div class="step"><b>Autocoleta</b><span>A mulher faz a própria coleta, sem espéculo, em ambiente acolhedor. Registro na plataforma PinkPapa.</span></div>
+    <div class="step"><b>Análise laboratorial</b><span>Exame molecular de DNA-HPV (PCR), com genotipagem dos tipos de alto risco e laudo rastreável.</span></div>
+    <div class="step"><b>Resultado</b><span>Negativo: retorno em 5 anos. Positivo: encaminhamento imediato e automático ao seguimento.</span></div>
+    <div class="step"><b>Seguimento</b><span>Colposcopia das HPV+, com prazo máximo definido. A plataforma não deixa o caso em aberto.</span></div>
+    <div class="step"><b>Tratamento e alta</b><span>Tratamento das lesões NIC2+ e acompanhamento por até 5 anos, com indicadores de desfecho.</span></div>
+  </div>
+  <div class="eye" style="margin-top:22px">O fluxo entre rede básica, laboratório e mulher</div>
+  <div class="chain">
+    <div class="ch"><i>1</i><b>UBS / comunidade</b><span>convoca e registra a autocoleta</span></div>
+    <div class="ch"><i>2</i><b>Laboratório</b><span>processa e libera o laudo</span></div>
+    <div class="ch"><i>3</i><b>Seguimento</b><span>colposcopia e tratamento das positivas</span></div>
+    <div class="ch"><i>4</i><b>Plataforma</b><span>acompanha a mulher por 5 anos</span></div>
+  </div>
+  <div class="callout teal">Nenhum resultado positivo fica sem desfecho. O rastreio só cumpre seu papel quando a mulher HPV+ chega à colposcopia e ao tratamento — por isso o seguimento é parte do serviço, não um encaminhamento solto.</div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">08</span></div>
+</div>
+
+<!-- 09 PLANO DE TRABALHO E CRONOGRAMA -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">07</span><h2>Plano de trabalho e cronograma</h2></div>
+  <p class="sec-sub">Metas, lotes de implantação e prazos</p>
+  <table>
+    <tr><th>Meta</th><th>Atividade</th><th class="n">Quantidade</th><th>Parâmetro de aferição</th></tr>
+    <tr><td><b>M1</b></td><td>Convocação por busca ativa</td><td class="n">88.794 mulheres</td><td>Convocadas sobre população sem rastreio</td></tr>
+    <tr><td><b>M2</b></td><td>Autocoleta de DNA-HPV</td><td class="n">71.035 testes</td><td>Testes realizados sobre convocadas (adesão)</td></tr>
+    <tr><td><b>M3</b></td><td>Exame molecular com laudo</td><td class="n">71.035 laudos</td><td>Laudos liberados sobre coletas; tempo até o laudo</td></tr>
+    <tr><td><b>M4</b></td><td>Colposcopia das HPV+</td><td class="n">7.104 encaminhamentos</td><td>Positivas com colposcopia sobre o total de HPV+</td></tr>
+    <tr><td><b>M5</b></td><td>Tratamento das lesões NIC2+</td><td class="n">852 tratamentos</td><td>Lesões tratadas sobre detectadas</td></tr>
+    <tr><td><b>M6</b></td><td>Acompanhamento na plataforma</td><td class="n">71.035 mulheres</td><td>Mulheres em seguimento ativo no painel</td></tr>
+  </table>
+  <div class="eye" style="margin-top:20px">Implantação em quatro lotes de unidades</div>
+  <div class="grid4">
+    <div class="stat t"><b>Lote 1</b><div class="l">UBS de maior população-alvo e menor cobertura</div><div class="s">meses 1–4 · ~22.000 testes</div></div>
+    <div class="stat o"><b>Lote 2</b><div class="l">demais UBS urbanas e UPA</div><div class="s">meses 4–8 · ~24.000 testes</div></div>
+    <div class="stat p"><b>Lote 3</b><div class="l">zona rural, distritos e busca ativa residual</div><div class="s">meses 8–12 · ~15.000 testes</div></div>
+    <div class="stat"><b>Lote 4 · Itinerante</b><div class="l">unidade móvel — carreta, ônibus ou van da saúde — em áreas sem UBS próxima, distritos e mutirões</div><div class="s">meses 2–12 · ~10.000 testes</div></div>
+  </div>
+  <div class="callout">O lote itinerante leva a autocoleta a bairros e zonas rurais sem unidade fixa próxima, em formato de <b>carreta, ônibus ou van</b> — elevando a cobertura onde a rede fixa não alcança e absorvendo mutirões de busca ativa.</div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">09</span></div>
+</div>
+
+<!-- 10 METAS E INDICADORES -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">08</span><h2>Metas e indicadores</h2></div>
+  <p class="sec-sub">Como o resultado é medido e comprovado</p>
+  <div class="grid3">
+    <div class="stat t"><b>≥ 70%</b><div class="l">de cobertura da população-alvo ao fim do primeiro ciclo</div></div>
+    <div class="stat t"><b>≤ 30 dias</b><div class="l">entre a autocoleta e a liberação do laudo</div></div>
+    <div class="stat t"><b>≥ 90%</b><div class="l">das HPV+ com colposcopia no prazo</div></div>
+    <div class="stat t"><b>≥ 95%</b><div class="l">das lesões NIC2+ com tratamento registrado</div></div>
+    <div class="stat t"><b>≥ 80%</b><div class="l">de adesão das mulheres convocadas</div></div>
+    <div class="stat t"><b>100%</b><div class="l">dos resultados com desfecho rastreável no painel</div></div>
+  </div>
+  <table style="margin-top:18px">
+    <tr><th>Resultado</th><th>Indicador</th><th>Meio de verificação</th></tr>
+    <tr><td>Cobertura do rastreio</td><td>Mulheres 25–64 testadas ÷ população-alvo</td><td>Painel PinkPapa · SISCAN</td></tr>
+    <tr><td>Tempestividade</td><td>Tempo médio entre coleta e laudo</td><td>Registro com data na plataforma</td></tr>
+    <tr><td>Seguimento das positivas</td><td>HPV+ com colposcopia e tratamento no prazo</td><td>Módulo de seguimento</td></tr>
+    <tr><td>Desempenho do Previne</td><td>Cobertura de citopatológico recomposta</td><td>Relatório Previne Brasil / e-SUS</td></tr>
+  </table>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">10</span></div>
+</div>
+
+<!-- 11 RECURSOS E FONTES -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div><div class="src">Modelo PinkPapa · SIGTAP 0202100251</div></div>
+  <div class="sec-h"><span class="no">09</span><h2>Recursos e fontes</h2></div>
+  <p class="sec-sub">Quanto custa e de onde vem</p>
+  <div class="big">
+    <div class="k">Valor de referência do ciclo de rastreio</div>
+    <div class="v tnum">R$ 41,91 mi</div>
+    <div class="d">71.035 autocoletas de DNA-HPV × R$ 590 por teste (kit + processamento laboratorial + laudo)</div>
+    <div class="mini">
+      <div><b class="tnum">R$ 590</b><span>por mulher testada</span></div>
+      <div><b class="tnum">R$ 328 mil</b><span>por caso de câncer evitado</span></div>
+      <div><b class="tnum">R$ 819 mil</b><span>por morte evitada</span></div>
+    </div>
+  </div>
+  <div class="eye" style="margin-top:20px">Custo-benefício frente ao tratamento tardio</div>
+  <div class="grid3">
+    <div class="stat"><b class="tnum">R$ 590</b><div class="l">rastrear uma mulher (DNA-HPV)</div></div>
+    <div class="stat r"><b class="tnum">R$ 30.000</b><div class="l">tratar um câncer invasivo tardio</div><div class="s">~51× o custo do rastreio</div></div>
+    <div class="stat t"><b class="tnum">R$ 3,65 mi</b><div class="l">em tratamento oncológico evitado</div><div class="s">128 casos × diferencial de custo</div></div>
+  </div>
+  <div class="eye" style="margin-top:18px">De onde vem o recurso</div>
+  <table>
+    <tr><th>Fonte</th><th>Enquadramento</th></tr>
+    <tr><td><b>MAC</b> — Média e Alta Complexidade</td><td>Procedimento SIGTAP 0202100251 custeado pelo teto MAC</td></tr>
+    <tr><td><b>PAP</b> — Atenção Primária</td><td>Coleta na rede básica; recompõe o indicador do Previne Brasil</td></tr>
+    <tr><td><b>Emenda parlamentar</b></td><td>Recurso carimbado para rastreio de câncer feminino</td></tr>
+  </table>
+  <div class="note">Premissas do modelo (ajustáveis no painel): meta de cobertura 70%, adesão 80%, prevalência de HPV de alto risco 10%, preço R$ 590/teste. Fonte do recurso selecionável na proposta.</div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">11</span></div>
+</div>
+
+<!-- 12 MONITORAMENTO E RISCOS -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">10</span><h2>Monitoramento e riscos</h2></div>
+  <p class="sec-sub">Como se acompanha a execução e se previne o que pode dar errado</p>
+  <div class="eye">A governança</div>
+  <div class="grid3">
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Comitê gestor</div><div class="l">Secretaria de Saúde com o executor. Reunião mensal e relatório trimestral.</div></div>
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Medição mensal</div><div class="l">Relatório de serviços até o quinto dia útil. Paga-se o que foi efetivamente realizado.</div></div>
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Painel de governança</div><div class="l">Cobertura, tempestividade e seguimento das positivas, por unidade e consolidado.</div></div>
+  </div>
+  <div class="eye" style="margin-top:20px">Riscos e respostas</div>
+  <table>
+    <tr><th>Risco</th><th>Resposta</th></tr>
+    <tr><td>Baixa adesão à autocoleta</td><td>Busca ativa, comunicação e operação assistida; indicador de adesão por unidade</td></tr>
+    <tr><td>Gargalo na colposcopia das positivas</td><td>Fila dedicada, prazo máximo pactuado e alerta automático no painel</td></tr>
+    <tr><td>Capacidade laboratorial</td><td>Dimensionamento prévio e prova de carga antes da operação plena</td></tr>
+    <tr><td>Proteção de dados sensíveis de saúde</td><td>Criptografia, consentimento, auditoria e comunicação de incidente em 2 horas (LGPD)</td></tr>
+    <tr><td>Resultado sem seguimento</td><td>A plataforma não encerra o caso até registrar o desfecho</td></tr>
+  </table>
+  <div class="note">A Secretaria de Saúde é controladora dos dados da sua política; o executor atua como operador, nos termos da LGPD.</div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">12</span></div>
+</div>
+
+<!-- 13 CONTRATAÇÃO E DECISÃO -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">11</span><h2>Contratação e decisão</h2></div>
+  <p class="sec-sub">Dois caminhos já instruídos e o que se pede ao gestor</p>
+  <div class="eye">Como contratar</div>
+  <div class="grid2">
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Lei nº 14.133/2021 — Credenciamento</div>
+      <div class="l">Contratação por credenciamento (art. 79), com inexigibilidade por inviabilidade de competição (art. 74, IV). ETP e Termo de Referência prontos; preços fixados pela Administração; pagamento por laudo liberado.</div></div>
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Lei nº 13.019/2014 — MROSC</div>
+      <div class="l">Parceria com OSC por Termo de Colaboração, precedida de chamamento público (art. 24) ou dispensa justificada (arts. 30–31), com Plano de Trabalho e prestação de contas.</div></div>
+  </div>
+  <div class="eye" style="margin-top:20px">O que se pede ao gestor</div>
+  <ul class="clean">
+    <li>Validar o dimensionamento (210.612 mulheres, meta de cobertura de 70%) e a fonte de recurso.</li>
+    <li>Autorizar a abertura do instrumento (credenciamento ou parceria) com as peças já instruídas.</li>
+    <li>Designar o comitê gestor e o fiscal do contrato para a medição mensal.</li>
+  </ul>
+  <div class="callout">Decisão de baixo risco: o procedimento é incorporado ao SUS, a diretriz é oficial e o pagamento é por serviço efetivamente prestado — o município paga pelo que foi medido.</div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">13</span></div>
+</div>
+
+<!-- 14 PROPONENTE E BASE DOCUMENTAL -->
+<div class="pg">
+  <div class="pg-hd"><div class="t">Projeto rastreio de colo do útero<span>Ribeirão Preto/SP · Proposta técnica</span></div></div>
+  <div class="sec-h"><span class="no">12</span><h2>Proponente e base documental</h2></div>
+  <p class="sec-sub">Quem faz e o que sustenta</p>
+  <div class="ente">
+    <div><div class="nm">PinkLab</div><div class="mt">Rastreio de câncer de colo do útero por DNA-HPV com autocoleta</div></div>
+    <div class="vv"><b><a href="https://pinklabsaude.com" target="_blank" rel="noopener" style="color:#F6A868;text-decoration:none">pinklabsaude.com</a></b><span>Plataforma, laboratório e base documental</span></div>
+  </div>
+  <div class="grid2">
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Quem faz</div>
+      <div class="l">PinkLab — plataforma PinkPapa e laboratório molecular — responsável pela estruturação, dimensionamento e instrução do processo de contratação.</div></div>
+    <div class="stat"><div class="eye navy" style="margin-bottom:4px">Base documental</div>
+      <ul class="clean" style="margin:2px 0 0">
+        <li>Autoteste de DNA-HPV homologado pela ANVISA</li>
+        <li>SIGTAP 0202100251 · Portaria SECTICS/MS nº 3/2024</li>
+        <li>Diretrizes de rastreamento INCA/MS 2024</li>
+        <li>Dimensionamento por IBGE 2022 e SISCAN</li>
+        <li>ETP, Termo de Referência e Plano de Trabalho</li>
+      </ul></div>
+  </div>
+  <div class="callout teal">Dados e metodologia completos no painel PinkPapa, onde esta proposta é gerada e atualizada por município: <b><a href="https://pinklabsaude.com" target="_blank" rel="noopener" style="color:#0A6B62">pinklabsaude.com</a></b>.</div>
+  <div class="pg-ft"><span>PinkLab · Documento de apoio à decisão do gestor</span><span class="n">14</span></div>
+</div>
+
+</div>
+</body>
+</html>
