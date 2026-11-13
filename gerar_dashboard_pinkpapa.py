@@ -1434,9 +1434,27 @@ ${S.paginas.map((p,i)=>pg(i+3, sec(String(i+1).padStart(2,'0'), p.t, p.s2||p.s),
 
 </div></body></html>`;
 }
-function baixarDeck(S, arquivo){
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([deckHTML(S)],{type:'text/html;charset=utf-8'}));
-  a.download=arquivo; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+async function baixarDeck(S, arquivo){
+  // gera o PDF A4 (1 página por seção) a partir do mesmo HTML e baixa direto na máquina
+  const btn=document.activeElement, old=btn&&btn.tagName==='BUTTON'?btn.innerHTML:null; if(old) btn.innerHTML='⏳ Gerando PDF…';
+  const pdfName=arquivo.replace(/\.html$/,'.pdf'); let f;
+  try{
+    if(!window.html2canvas) await new Promise((ok,er)=>{const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; sc.onload=ok; sc.onerror=er; document.head.appendChild(sc);});
+    f=document.createElement('iframe'); f.style.cssText='position:fixed;left:-10000px;top:0;width:880px;height:1300px;border:0'; document.body.appendChild(f);
+    const D=f.contentDocument; D.open(); D.write(deckHTML(S)); D.close();
+    await new Promise(r=>setTimeout(r,400)); try{ await D.fonts.ready; }catch(e){}
+    await Promise.all([...D.images].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r;})));
+    const nb=D.querySelector('.noprint'); if(nb) nb.remove();
+    const st=D.createElement('style'); st.textContent='.pg,.cover,.closing{border-radius:0!important;box-shadow:none!important}'; D.head.appendChild(st);
+    D.querySelectorAll('svg [fill^="var("],svg [stroke^="var("]').forEach(el=>{const cs=f.contentWindow.getComputedStyle(el); if(el.getAttribute('fill')) el.setAttribute('fill',cs.fill); if(el.getAttribute('stroke')) el.setAttribute('stroke',cs.stroke);});
+    const {jsPDF}=window.jspdf, doc=new jsPDF({unit:'pt',format:'a4'}), W=595.28, H=841.89;
+    const pages=[...D.querySelectorAll('.cover,.pg,.closing')];
+    for(let i=0;i<pages.length;i++){ const cv=await html2canvas(pages[i],{scale:1.6,useCORS:true,backgroundColor:'#ffffff',windowWidth:880});
+      if(i) doc.addPage(); doc.addImage(cv.toDataURL('image/jpeg',0.88),'JPEG',0,0,W,H,undefined,'FAST'); }
+    doc.save(pdfName);
+  }catch(e){ console.error(e); alert('Não foi possível gerar o PDF ('+e.message+'). Baixando a versão HTML, que também pode ser salva em PDF.');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([deckHTML(S)],{type:'text/html;charset=utf-8'})); a.download=arquivo; document.body.appendChild(a); a.click(); a.remove();
+  }finally{ if(f) f.remove(); if(old) btn.innerHTML=old; }
 }
 /* Conteúdo da apresentação PinkPapa (rastreio do colo do útero) — dados do município selecionado. Identidade vinho/rosa. */
 function apresSpec(c){
