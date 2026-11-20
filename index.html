@@ -137,6 +137,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
   <button class="aba" role="tab" onclick="abrir(5)">05 · Metas e cobertura</button>
   <button class="aba" role="tab" onclick="abrir(6)">06 · Ranking</button>
   <button class="aba" role="tab" onclick="abrir(7)">07 · Metodologia</button>
+  <button class="aba destaque" role="tab" onclick="abrir(8)">💰 Financiamento</button>
 </div></nav>
 
 <div class="hero"><div class="wrap">
@@ -370,11 +371,217 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
   </div>
 </div></section>
 
+<section class="alt"><div class="wrap">
+  <div class="h">Financiamento da ação</div>
+  <h3 class="title">Quem paga o quê: FAEC, MAC e PAP</h3>
+  <p class="lead">Enquadra cada procedimento da ação (rastreio, OCI e cirurgias) na fonte correta, mostra o saldo do Agora Tem Especialistas a comprovar e a memória de cálculo do complemento. Valores SIGTAP 11/2026.</p>
+  <div id="fin-box"><p class="lead">Escolha um município ou estado na aba Dimensionamento para ver o enquadramento.</p></div>
+</div></section>
+
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-11-14 07:21 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-11-20 12:16 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
+<script>/* Seção "Financiamento da ação" — módulo compartilhado dos painéis G3
+   (PinkPapa, RosalindTest, Linda, Raio-X, TEAlliance).
+   Uso: FinSecao.montar('id-do-container', {nome, uf, isUF, pate, teto, foco})
+     pate = linha do SUS 360 Saldo do Gestor ({saldo, repasses, repAmbulatorial, pctExecutado, ...}) ou null
+     teto = teto MAC anual (número) ou null; foco = 'colo' | 'mama' | 'geral' (só muda as metas de exemplo)
+   Valores: SIGTAP competência 11/2026. Acréscimos da mamografia lidos de rl_procedimento_incremento
+   (3201 = +44,88%; 3801/3805/3806 = +122%); tratados como não cumulativos (a confirmar). */
+(function () {
+  const CSS = `
+.fin{--faec:#12A97A;--mac:#2B3A86;--pap:#C77700;--prop:#7a6b73;font-size:14px}
+.fin .fin-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.fin .fin-card{background:#fff;border:1px solid var(--line,#e6e6ee);border-radius:14px;padding:14px}
+.fin .fin-num{font-size:22px;font-weight:800;color:var(--wine,var(--navy,#2A1622))}
+.fin .fin-num.g{color:#12A97A}.fin .fin-num.r{color:#C81E5B}
+.fin .fin-lbl{font-size:13px;margin-top:2px}.fin .fin-src{font-size:11px;color:var(--muted,#777);margin-top:6px}
+.fin .fin-pn{background:#fff;border:1px solid var(--line,#e6e6ee);border-radius:16px;padding:16px;margin-top:14px}
+.fin .fin-pn h3{font-size:16px;margin:0 0 8px}
+.fin .fin-tw{overflow-x:auto}
+.fin table{width:100%;border-collapse:collapse;font-size:13px}
+.fin th,.fin td{padding:7px 8px;border-bottom:1px solid var(--line,#e6e6ee);text-align:left;vertical-align:top}
+.fin th{font-size:11.5px;color:var(--muted,#777);text-transform:uppercase;letter-spacing:.4px}
+.fin .n{text-align:right;white-space:nowrap}
+.fin input,.fin select{padding:5px 7px;border:1px solid var(--line,#ddd);border-radius:8px;font:inherit}
+.fin input[type=number]{width:90px;text-align:right}
+.fin .fin-b{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;color:#fff;white-space:nowrap}
+.fin .FAEC{background:var(--faec)}.fin .MAC{background:var(--mac)}.fin .PAP{background:var(--pap)}.fin .PROP{background:var(--prop)}
+.fin .fin-grp td{background:var(--soft,#f6f6fb);font-weight:700;font-size:12px}
+.fin .fin-bar{display:flex;height:24px;border-radius:8px;overflow:hidden;margin:6px 0 10px;background:var(--line,#eee)}
+.fin .fin-leg{display:flex;flex-wrap:wrap;gap:14px;font-size:13px}
+.fin .fin-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.fin .fin-al{border:1px solid var(--line,#e6e6ee);border-left:4px solid #C81E5B;border-radius:10px;padding:9px 12px;margin:7px 0;background:#fff}
+.fin .fin-al.ok{border-left-color:#12A97A}
+.fin .fin-in{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:8px 0}
+.fin .fin-in label{font-size:12px;color:var(--muted,#777)}
+.fin .fin-tag{font-size:12px;color:var(--muted,#777)}
+.fin .fin-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.fin .fin-btns a,.fin .fin-btns button{border:1.5px solid var(--pink,var(--navy,#2B3A86));color:var(--pink,var(--navy,#2B3A86));background:#fff;border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}`;
+
+  // [grupo, código, procedimento, onde, valor unitário, fonte]
+  const LINHAS = [
+    ['Rastreio', '0204030188', 'Mamografia bilateral de rastreamento', 'Carreta', 45.00, 'MAC'],
+    ['Rastreio', '0202100251', 'Exame DNA-HPV', 'Laboratório', 0, 'MAC'],
+    ['Diagnóstico (OCI)', '0901010014', 'OCI avaliação inicial câncer de mama', 'Carreta/ambulatório', 222.45, 'FAEC'],
+    ['Diagnóstico (OCI)', '0901010111', 'OCI diagnóstica e terapêutica colo do útero I', 'Ambulatório', 220.00, 'FAEC'],
+    ['Diagnóstico (OCI)', '0905010035', 'OCI avaliação inicial em oftalmologia', 'Carreta', 160.00, 'FAEC'],
+    ['Cirurgias', '0405050372', 'Catarata – facoemulsificação com LIO dobrável', 'Clínica (ou carreta)', 771.60, 'FAEC'],
+    ['Cirurgias', '0406020566', 'Varizes – cirurgia bilateral', 'Clínica', 833.48, 'FAEC'],
+    ['Cirurgias', '0309070023', 'Varizes – escleroterapia bilateral', 'Clínica', 392.62, 'FAEC'],
+  ];
+  // perfil TEA (Inclusi.Via): procedimentos de neurodesenvolvimento; os de valor zero são custeados pela
+  // habilitação do serviço (CER = incentivo MAC mensal; eMulti = PAP), a produção só comprova a execução
+  const LINHAS_TEA = [
+    ['Atenção Primária', '0301070202', 'Estimulação precoce para desenvolvimento neuropsicomotor', 'UBS / eMulti', 0, 'PAP', 500],
+    ['Atenção Especializada', '0301070296', 'Estimulação precoce relacionada ao neurodesenvolvimento', 'CER / ambulatório', 0, 'MAC', 800],
+    ['Atenção Especializada', '0301070261', 'Teleatendimento / telemonitoramento em reabilitação intelectual', 'CER', 0, 'MAC', 300],
+    ['Diagnóstico', '0301010200', 'Avaliação clínica para diagnóstico de doenças raras – deficiência intelectual', 'Serviço de doenças raras habilitado', 800, 'FAEC', 40],
+  ];
+  const METAS = {
+    colo: [1000, 4000, 50, 400, 100, 50, 20, 30],
+    mama: [3000, 500, 150, 50, 100, 50, 20, 30],
+    geral: [3000, 4000, 150, 300, 400, 200, 80, 120],
+  };
+  const NOME = { FAEC: 'Programa / FAEC', MAC: 'MAC', PAP: 'PAP', PROP: 'Recurso próprio / emenda' };
+  const COR = { FAEC: '#12A97A', MAC: '#2B3A86', PAP: '#C77700', PROP: '#7a6b73' };
+  const R = v => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function montar(id, o) {
+    const el = document.getElementById(id); if (!el) return;
+    if (!document.getElementById('fin-css')) {
+      const st = document.createElement('style'); st.id = 'fin-css'; st.textContent = CSS; document.head.appendChild(st);
+    }
+    const p = o.pate || null, saldo = p ? (p.saldo || 0) : 0, amb = p ? (p.repAmbulatorial || 0) : 0;
+    const tea = o.foco === 'tea', mod = o.modelos || 'modelos/';
+    const metas = METAS[o.foco] || METAS.geral;
+    const L = tea ? LINHAS_TEA.map(l => l.slice()) : LINHAS.map((l, i) => l.concat([metas[i]]));
+    const ente = o.isUF ? 'o estado' : 'o município';
+    el.className = 'fin';
+    el.innerHTML = `
+<div class="fin-cards">
+  ${o.teto ? `<div class="fin-card"><div class="fin-num">${R(o.teto)}</div><div class="fin-lbl">Teto MAC anual</div><div class="fin-src">${esc(o.tetoFonte || 'SISMAC · Painéis CONASEMS')}</div></div>` : ''}
+  <div class="fin-card"><div class="fin-num ${saldo > 0 ? 'r' : 'g'}">${p ? R(p.repasses) : '—'}</div><div class="fin-lbl">Agora Tem Especialistas repassado${p ? ` · <b>${(p.pctExecutado || 0).toFixed(0)}% executado</b>` : ''}</div><div class="fin-src">SUS 360 · Saldo do Gestor</div></div>
+  <div class="fin-card"><div class="fin-num r">${p ? R(saldo) : '—'}</div><div class="fin-lbl">Saldo a comprovar com produção</div><div class="fin-src">Não é dinheiro em conta (NT 33/2026)</div></div>
+  <div class="fin-card"><div class="fin-num g">${p ? R(amb) : '—'}</div><div class="fin-lbl">Componente ambulatorial (OCI · FAEC)</div><div class="fin-src">SUS 360</div></div>
+</div>
+${p ? '' : `<div class="fin-al">${esc(o.nome)} não aparece como gestor com recurso do Agora Tem Especialistas nesta competência: a parte FAEC pode estar sob gestão estadual (pactuar na CIR/CIB).</div>`}
+
+<div class="fin-pn"><h3>Matriz de financiamento · edite as metas</h3>
+ <div class="fin-tw"><table><thead><tr><th>Código</th><th>Procedimento</th><th>Onde</th><th class="n">Valor unit.</th><th>Paga</th><th class="n">Meta</th><th class="n">Total</th></tr></thead><tbody class="fin-mx"></tbody></table></div>
+ <p class="fin-tag">${tea
+   ? 'Procedimentos com valor R$ 0,00 não geram pagamento por produção: o custeio vem da habilitação do serviço (CER, incentivo MAC mensal; eMulti, PAP). A produção registrada comprova a execução e sustenta o pedido de habilitação.'
+   : 'Operação da carreta e convocação na APS não são procedimentos pagos pelo FAEC: entram como emenda MAC/PAP ou recurso próprio.'}</p></div>
+
+<div class="fin-pn"><h3>Composição por fonte</h3><div class="fin-bar"></div><div class="fin-leg"></div>
+ <p class="fin-tag" style="margin-top:8px">“Programa / FAEC” = produção com marcação do Agora Tem Especialistas: consome primeiro o saldo já antecipado e o excedente é pago pelo FAEC após a produção.</p></div>
+
+${tea ? '' : `<div class="fin-pn"><h3>Mamografia · memória de cálculo do complemento</h3>
+ <p class="fin-tag">O FAEC não complementa preço de procedimento MAC. O que reduz o complemento é a <b>habilitação</b> do serviço, que dá acréscimo previsto na própria tabela SIGTAP.</p>
+ <div class="fin-in">
+  <label>Preço de mercado por exame (pesquisa IN 65/2021)<br><input type="number" class="m-preco" min="0" step="0.01" value="120"></label>
+  <label>Meta de exames<br><input type="number" class="m-meta" min="0" value="${L[0][6]}"></label>
+  <label>Habilitação da carreta<br><select class="m-hab"><option value="0">Sem habilitação (só tabela)</option><option value="0.4488">Unidade de Mamografia Móvel (+44,88%)</option><option value="1.22" selected>Mais Acesso / Agora Tem Especialistas (+122%)</option></select></label>
+ </div>
+ <div class="fin-tw"><table><thead><tr><th>Degrau</th><th class="n">SUS paga</th><th class="n">Complemento / exame</th><th class="n">Complemento total</th></tr></thead><tbody class="m-esc"></tbody></table></div>
+ <div class="fin-al ok m-msg"></div>
+ <p class="fin-tag">Casos alterados seguem para a OCI de mama (0901010014, R$ 222,45, FAEC). Complemento: pesquisa de preços + portaria/decreto de tabela complementar aprovada no Conselho Municipal de Saúde + fonte no contrato. Em SP, verificar a Tabela SUS Paulista. Acréscimos tratados como não cumulativos (a confirmar).</p></div>
+
+<div class="fin-pn"><h3>DNA-HPV · tabela zerada: como fecha a conta</h3>
+ <p class="fin-tag">0201020076 (coleta), 0201020084 (entrega da autocoleta) e 0202100251 (exame) estão com R$ 0,00 no SIGTAP 11/2026: registram a produção, não geram pagamento federal.</p>
+ <div class="fin-cards" style="margin:8px 0">
+  <div class="fin-card"><div class="fin-lbl"><b>1 · Teste fornecido pelo Ministério?</b></div><div class="fin-tag">Confirmar com a Secretaria Estadual. Se sim, ${ente} não paga o teste; o objeto vira organização do rastreio (convocação, autocoleta, navegação).</div></div>
+  <div class="fin-card"><div class="fin-lbl"><b>2 · Se não: serviço por mulher rastreada</b></div><div class="fin-tag">Análise por emenda MAC, convocação e coleta por emenda PAP, resto recurso próprio. Registrar a produção mesmo com valor zero: prova a execução.</div></div>
+  <div class="fin-card"><div class="fin-lbl"><b>3 · O retorno vem pelo FAEC</b></div><div class="fin-tag">As positivas seguem para a OCI de colo do útero (R$ 220, FAEC), consumindo o saldo ambulatorial já recebido.</div></div>
+ </div>
+ <div class="fin-in">
+  <label>Mulheres rastreadas<br><input type="number" class="h-n" min="0" value="${L[1][6]}"></label>
+  <label>Preço do serviço por mulher<br><input type="number" class="h-p" min="0" step="0.01" value="350"></label>
+  <label>Positividade HPV (%)<br><input type="number" class="h-pos" min="0" max="100" value="10"></label>
+ </div>
+ <div class="fin-cards h-cards"></div></div>`}
+
+<div class="fin-pn"><h3>Alertas de conformidade</h3><div class="fin-alerts"></div></div>
+
+<div class="fin-btns">
+ ${tea ? '' : `<a href="${mod}ETP_Credenciamento_Cirurgias_Catarata_Varizes_Modelo.docx">ETP – prestador cirúrgico (.docx)</a>
+ <a href="${mod}TR_Credenciamento_Cirurgias_Catarata_Varizes_Modelo.docx">TR – prestador cirúrgico (.docx)</a>`}
+ <button type="button" class="fin-csv">Matriz de financiamento (.csv)</button>
+</div>`;
+
+    const $ = s => el.querySelector(s);
+    const tb = $('.fin-mx'); let g = '';
+    L.forEach((l, i) => {
+      if (l[0] !== g) { g = l[0]; tb.insertAdjacentHTML('beforeend', `<tr class="fin-grp"><td colspan="7">${g}</td></tr>`); }
+      tb.insertAdjacentHTML('beforeend', `<tr><td>${l[1]}</td><td>${l[2]}</td><td>${l[3]}</td><td class="n fin-v${i}">${l[4] ? R(l[4]) : 'R$ 0,00 ⚠'}</td><td><span class="fin-b ${l[5]}">${NOME[l[5]]}</span></td><td class="n"><input type="number" min="0" value="${l[6]}" data-i="${i}" aria-label="Meta ${esc(l[2])}"></td><td class="n fin-t${i}"></td></tr>`);
+    });
+    let compl = 0;
+
+    function calc() {
+      const tot = { FAEC: 0, MAC: 0, PAP: 0, PROP: compl };
+      tb.querySelectorAll('input').forEach(e => { const l = L[e.dataset.i]; l[6] = +e.value || 0; const v = l[6] * l[4]; tot[l[5]] += v; $('.fin-t' + e.dataset.i).textContent = l[4] ? R(v) : 'a definir'; });
+      const soma = tot.FAEC + tot.MAC + tot.PAP + tot.PROP;
+      $('.fin-bar').innerHTML = Object.keys(tot).filter(k => tot[k]).map(k => `<div style="width:${tot[k] / soma * 100}%;background:${COR[k]}" title="${NOME[k]}"></div>`).join('');
+      $('.fin-leg').innerHTML = Object.keys(tot).map(k => `<span><i style="background:${COR[k]}"></i>${NOME[k]}: <b>${R(tot[k])}</b></span>`).join('') + `<span>Total: <b>${R(soma)}</b></span>`;
+      const al = [];
+      if (p && saldo > 0 && !tea) al.push(tot.FAEC >= saldo
+        ? `<div class="fin-al ok">A produção do programa (${R(tot.FAEC)}) cobre o saldo antecipado de ${R(saldo)}: o saldo fica comprovado e o excedente vira pagamento FAEC pós-produção.</div>`
+        : `<div class="fin-al">A produção do programa (${R(tot.FAEC)}) ainda não cobre o saldo antecipado de ${R(saldo)}. Recurso sem comprovação trava novos repasses.</div>`);
+      if (tea) {
+        al.push('<div class="fin-al">Estimulação precoce e reabilitação intelectual têm valor R$ 0,00 no SIGTAP 11/2026: sem habilitação de CER (ou eMulti na APS) não há fonte federal por produção.</div>');
+        al.push('<div class="fin-al">A avaliação de doenças raras (FAEC, R$ 800,00) exige serviço habilitado em doenças raras; fora dele, a produção é rejeitada.</div>');
+      } else {
+        al.push('<div class="fin-al">Exame DNA-HPV (0202100251) com valor R$ 0,00 no SIGTAP 11/2026: defina como o laboratório será pago.</div>');
+        al.push('<div class="fin-al">A operação da carreta não é procedimento SIGTAP: não pode ser paga com FAEC.</div>');
+      }
+      al.push('<div class="fin-al">Quem redigir o ETP/TR não pode participar da contratação do mesmo objeto (Lei 14.133, art. 14).</div>');
+      $('.fin-alerts').innerHTML = al.join('');
+    }
+
+    function mamo() {
+      const P = +$('.m-preco').value || 0, N = +$('.m-meta').value || 0, pct = +$('.m-hab').value;
+      const deg = [['1 · Só a tabela SIGTAP', 0], ['2a · Unidade de Mamografia Móvel', .4488], ['2b · Mais Acesso / Agora Tem Especialistas', 1.22]];
+      $('.m-esc').innerHTML = deg.map(([n, x]) => { const sus = 45 * (1 + x), c = Math.max(P - sus, 0);
+        return `<tr${x === pct ? ' style="font-weight:700;background:var(--soft,#f6f6fb)"' : ''}><td>${n}</td><td class="n">${R(sus)}</td><td class="n">${R(c)}</td><td class="n">${R(c * N)}</td></tr>`; }).join('');
+      const base = Math.max(P - 45, 0) * N; compl = Math.max(P - 45 * (1 + pct), 0) * N;
+      $('.m-msg').textContent = base ? `Com a habilitação escolhida, ${ente} põe ${R(compl)} em vez de ${R(base)}: ${Math.round((1 - compl / base) * 100)}% a menos de recurso próprio.` : 'Preço de mercado igual ou abaixo da tabela: não há complemento.';
+      L[0][4] = +(45 * (1 + pct)).toFixed(2); $('.fin-v0').textContent = R(L[0][4]);
+      calc();
+    }
+
+    function hpv() {
+      const N = +$('.h-n').value || 0, P = +$('.h-p').value || 0, pos = Math.round(N * (+$('.h-pos').value || 0) / 100), faec = pos * 220;
+      $('.h-cards').innerHTML =
+        `<div class="fin-card"><div class="fin-num">${R(N * P)}</div><div class="fin-lbl">Custo do serviço de rastreio</div><div class="fin-src">Emenda MAC/PAP + recurso próprio</div></div>` +
+        `<div class="fin-card"><div class="fin-num">${pos.toLocaleString('pt-BR')}</div><div class="fin-lbl">Positivas que seguem para a OCI</div></div>` +
+        `<div class="fin-card"><div class="fin-num g">${R(faec)}</div><div class="fin-lbl">Produção FAEC gerada (OCI R$ 220)</div><div class="fin-src">0901010111</div></div>` +
+        (amb > 0 ? `<div class="fin-card"><div class="fin-num ${faec >= amb ? 'g' : 'r'}">${Math.min(Math.round(faec / amb * 100), 999)}%</div><div class="fin-lbl">do componente ambulatorial (${R(amb)}) comprovado</div><div class="fin-src">SUS 360</div></div>` : '');
+    }
+
+    function csv() {
+      const linhas = [['Codigo', 'Procedimento', 'Onde', 'Valor unitario', 'Fonte', 'Meta', 'Total']]
+        .concat(L.map(l => [l[1], l[2], l[3], l[4].toFixed(2).replace('.', ','), NOME[l[5]], l[6], (l[4] * l[6]).toFixed(2).replace('.', ',')]));
+      const txt = '﻿' + linhas.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' }));
+      a.download = 'Matriz_Financiamento_' + String(o.nome).replace(/[^\w]+/g, '_') + '.csv'; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    tb.addEventListener('input', calc);
+    $('.fin-csv').addEventListener('click', csv);
+    if (tea) { calc(); return; }
+    ['.m-preco', '.m-meta', '.m-hab'].forEach(s => $(s).addEventListener('input', mamo));
+    ['.h-n', '.h-p', '.h-pos'].forEach(s => $(s).addEventListener('input', hpv));
+    mamo(); hpv();
+  }
+
+  window.FinSecao = { montar };
+})();
+</script>
 <script>
 // Abas: capa (hero) + uma por <section>; #aba-N na URL abre direto e permite compartilhar o link da aba
 const ABAS=[document.querySelector('.hero'),...document.querySelectorAll('body>section')];
@@ -885,6 +1092,7 @@ function show(){
   document.getElementById('mcov').innerHTML = cb
     ? 'Cobertura atual preenchida com dado real: <b>'+cb[0]+'%</b> — '+(cb[1]||'SISCAN')+', triênio '+(cb[2]||'2022-2024')+' (mulheres únicas rastreadas 25–64 ÷ população 25–64)'+fbTxt+'. &nbsp;·&nbsp; <b>Previne/APS</b> (coleta de citopatológico na APS): indicador por município exige acesso restrito ao SISAB — não disponível publicamente.'
     : 'Cobertura atual: ajuste manual (sem dado SISCAN para este recorte).';
+  if(window.FinSecao) FinSecao.montar('fin-box',{nome:selected[0],uf:selected[1],isUF:selected[4],pate:PATE[selected[4]?(PATE_UF[selected[1]]||''):selected[5]]||null,foco:'colo'});
   calc();
 }
 
