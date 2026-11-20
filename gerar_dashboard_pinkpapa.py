@@ -463,8 +463,8 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <section class="alt"><div class="wrap">
   <div class="h">Financiamento da ação</div>
-  <h3 class="title">Quem paga o quê: FAEC, MAC e PAP</h3>
-  <p class="lead">Enquadra cada procedimento da ação (rastreio, OCI e cirurgias) na fonte correta, mostra o saldo do Agora Tem Especialistas a comprovar e a memória de cálculo do complemento. Valores SIGTAP 11/2026.</p>
+  <h3 class="title">Planejador da ação: oportunidade, escopo, orçamento, execução e proposta</h3>
+  <p class="lead">Monta a ação para o município escolhido: histórico de produção do DATASUS, metas e capacidade, quem paga (SUS por produção, FAEC, emendas, contrapartida), cronograma e proposta em PDF.</p>
   <div id="fin-box"><p class="lead">Escolha um município ou estado na aba Dimensionamento para ver o enquadramento.</p></div>
 </div></section>
 
@@ -563,7 +563,9 @@ function show(){
   document.getElementById('mcov').innerHTML = cb
     ? 'Cobertura atual preenchida com dado real: <b>'+cb[0]+'%</b> — '+(cb[1]||'SISCAN')+', triênio '+(cb[2]||'2022-2024')+' (mulheres únicas rastreadas 25–64 ÷ população 25–64)'+fbTxt+'. &nbsp;·&nbsp; <b>Previne/APS</b> (coleta de citopatológico na APS): indicador por município exige acesso restrito ao SISAB — não disponível publicamente.'
     : 'Cobertura atual: ajuste manual (sem dado SISCAN para este recorte).';
-  if(window.FinSecao) FinSecao.montar('fin-box',{nome:selected[0],uf:selected[1],isUF:selected[4],ibge6:selected[4]?(PATE_UF[selected[1]]||''):selected[5],pacotes:['saude_mulher','dna_hpv','visao_360','biopsia','odontologia','cardiologia','livre'],pacote:'dna_hpv',pop:selected[2],precoHPV:()=>+val('preco')});
+  // município: Planejador da ação (mesmo do Raio-X); estado: seção de financiamento
+  if(window.FinPlanejador&&!selected[4]) FinPlanejador.montar('fin-box',{nome:selected[0],uf:selected[1],ibge6:selected[5],ibge7:selected[5],pop:selected[2],popFonte:'o Censo 2022 do IBGE',pacotes:['dna_hpv','saude_mulher','dna_hpv','visao_360','biopsia','odontologia','cardiologia','livre'].filter((x,i,a)=>a.indexOf(x)===i),pacote:'dna_hpv',histUrl:'https://raiox-g3.fly.dev/api/historico',produto:{nome:'PinkPapa — DNA-HPV com autocoleta (kit, análise e navegação)',preco:()=>+val('preco')},cValPadrao:0});
+  else if(window.FinSecao) FinSecao.montar('fin-box',{nome:selected[0],uf:selected[1],isUF:selected[4],ibge6:selected[4]?(PATE_UF[selected[1]]||''):selected[5],pacotes:['saude_mulher','dna_hpv','visao_360','biopsia','odontologia','cardiologia','livre'],pacote:'dna_hpv',pop:selected[2],precoHPV:()=>+val('preco')});
   calc();
 }
 
