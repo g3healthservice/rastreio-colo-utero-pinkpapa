@@ -563,7 +563,7 @@ function show(){
   document.getElementById('mcov').innerHTML = cb
     ? 'Cobertura atual preenchida com dado real: <b>'+cb[0]+'%</b> — '+(cb[1]||'SISCAN')+', triênio '+(cb[2]||'2022-2024')+' (mulheres únicas rastreadas 25–64 ÷ população 25–64)'+fbTxt+'. &nbsp;·&nbsp; <b>Previne/APS</b> (coleta de citopatológico na APS): indicador por município exige acesso restrito ao SISAB — não disponível publicamente.'
     : 'Cobertura atual: ajuste manual (sem dado SISCAN para este recorte).';
-  if(window.FinSecao) FinSecao.montar('fin-box',{nome:selected[0],uf:selected[1],isUF:selected[4],ibge6:selected[4]?(PATE_UF[selected[1]]||''):selected[5],pacotes:['saude_mulher','visao_360'],pacote:'saude_mulher',precoHPV:()=>+val('preco')});
+  if(window.FinSecao) FinSecao.montar('fin-box',{nome:selected[0],uf:selected[1],isUF:selected[4],ibge6:selected[4]?(PATE_UF[selected[1]]||''):selected[5],pacotes:['saude_mulher','dna_hpv','visao_360','biopsia','odontologia','cardiologia','livre'],pacote:'dna_hpv',pop:selected[2],precoHPV:()=>+val('preco')});
   calc();
 }
 
