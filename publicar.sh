@@ -4,9 +4,10 @@ set -e
 cd "$(dirname "$0")"
 export PATH="$HOME/bin:$PATH"
 python3 gerar_dashboard_pinkpapa.py
+cp ~/g3-financiamento/modelos/*.docx modelos/   # ETP/TR dos pacotes do hub
 cp index.html ~/Downloads/Dashboard_PinkPapa_Municipios.html
 # só o painel gerado — evita empurrar CSVs de contato/e-mail e scripts ao repo público
-git add index.html
+git add index.html && git add -A modelos
 git commit -q -m "Atualiza painel PinkPapa ($(date +%F' '%H:%M))
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" || echo "nada a commitar"

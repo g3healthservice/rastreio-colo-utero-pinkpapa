@@ -12,9 +12,12 @@ import json, datetime, pathlib
 
 BASE = pathlib.Path(__file__).resolve().parent
 DADOS = json.load(open(BASE/"dados/municipios_pinkpapa.json", encoding="utf-8"))
-_pate_path = BASE/"dados/pate_saldo_202607.json"
+# SUS 360 do monitor (~/g3-financiamento/atualizar_fontes.py); cai no snapshot local se o monitor nunca rodou
+_hub = pathlib.Path.home()/"g3-financiamento/dados"
+_pate_path = _hub/"pate_saldo.json" if (_hub/"pate_saldo.json").exists() else BASE/"dados/pate_saldo_202607.json"
 PATE = json.load(open(_pate_path, encoding="utf-8")) if _pate_path.exists() else {}
-PATE_COMP = "07/2026 · competência 2025-01 a 2026-07 (NT 33/2026 · PATE)"
+_comp = json.load(open(_hub/"fontes_meta.json"))["pate"] if (_hub/"fontes_meta.json").exists() else "07/2026"
+PATE_COMP = f"{_comp} · competência 2025-01 a {_comp[3:]}-{_comp[:2]} (NT 33/2026 · PATE)"
 BUILD = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 # endpoint do Apps Script (envio real de e-mail com anexo). Vazio = fallback mailto.
@@ -560,7 +563,7 @@ function show(){
   document.getElementById('mcov').innerHTML = cb
     ? 'Cobertura atual preenchida com dado real: <b>'+cb[0]+'%</b> — '+(cb[1]||'SISCAN')+', triênio '+(cb[2]||'2022-2024')+' (mulheres únicas rastreadas 25–64 ÷ população 25–64)'+fbTxt+'. &nbsp;·&nbsp; <b>Previne/APS</b> (coleta de citopatológico na APS): indicador por município exige acesso restrito ao SISAB — não disponível publicamente.'
     : 'Cobertura atual: ajuste manual (sem dado SISCAN para este recorte).';
-  if(window.FinSecao) FinSecao.montar('fin-box',{nome:selected[0],uf:selected[1],isUF:selected[4],pate:PATE[selected[4]?(PATE_UF[selected[1]]||''):selected[5]]||null,foco:'colo'});
+  if(window.FinSecao) FinSecao.montar('fin-box',{nome:selected[0],uf:selected[1],isUF:selected[4],ibge6:selected[4]?(PATE_UF[selected[1]]||''):selected[5],pacotes:['saude_mulher','visao_360'],pacote:'saude_mulher',precoHPV:()=>+val('preco')});
   calc();
 }
 
